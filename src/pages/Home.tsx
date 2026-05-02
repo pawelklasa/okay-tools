@@ -73,7 +73,7 @@ function Hero() {
         </div>
 
         {/* Strip 2: greyscale at HSL's claimed L (all identical) */}
-        <StripLabel caption="What HSL thinks they are" sub={`All grey, all L=${Math.round(hslL * 100)}%`} />
+        <StripLabel caption="What HSL claims they are" sub={`All grey, all L=${Math.round(hslL * 100)}%`} />
         <div
           className="grid h-9 rounded-md overflow-hidden border border-[var(--color-border)] mb-3"
           style={{ gridTemplateColumns: `repeat(${HERO_HUES.length}, 1fr)` }}
@@ -84,7 +84,7 @@ function Hero() {
         </div>
 
         {/* Strip 3: greyscale at actual perceptual L */}
-        <StripLabel caption="What they actually are" sub="True perceptual brightness" />
+        <StripLabel caption="What they actually look like" sub="True perceptual brightness" />
         <div
           className="grid h-9 rounded-md overflow-hidden border border-[var(--color-border)] mb-2"
           style={{ gridTemplateColumns: `repeat(${HERO_HUES.length}, 1fr)` }}
@@ -103,6 +103,9 @@ function Hero() {
 
         {/* Slider */}
         <div className="mt-4 flex items-center gap-4">
+          <label className="mono text-[10.5px] uppercase tracking-[0.12em] text-[var(--color-fg-dim)] shrink-0">
+            Drag HSL L
+          </label>
           <input
             type="range"
             min={0.05}
@@ -126,12 +129,12 @@ function Hero() {
         </p>
       </div>
 
-      {/* Headline below the demo */}
-      <h1 className="mt-12 text-[40px] md:text-[56px] lg:text-[64px] font-semibold tracking-[-0.035em] leading-[1.04] text-[var(--color-fg)] max-w-4xl">
+      {/* Headline directly underneath the demo */}
+      <h1 className="mt-7 text-[40px] md:text-[56px] lg:text-[64px] font-semibold tracking-[-0.035em] leading-[1.04] text-[var(--color-fg)] max-w-4xl">
         OKLCH tools that{" "}
         <span className="text-[var(--color-fg-dim)]">show you the difference.</span>
       </h1>
-      <p className="mt-6 text-[16px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl">
+      <p className="mt-5 text-[16px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl">
         Every popular colour-picker site treats OKLCH as the answer. The interesting part is what
         it reveals about the colours you've been shipping. That's what this is. Companion to{" "}
         <a
@@ -271,8 +274,7 @@ function MigratorCard() {
     { label: "hsl(120 100% 50%)", drift: 0.37 },
     { label: "hsl(0 100% 50%)", drift: 0.04 },
     { label: "hsl(240 100% 50%)", drift: -0.21 },
-  ];
-  return (
+  ];  return (
     <CardShell
       to="/hsl-to-oklch"
       title="HSL → OKLCH"
@@ -321,10 +323,20 @@ function RampCard() {
       title="Ramp Generator"
       blurb="One anchor in. Eleven balanced steps out. Export to your stack."
       preview={
-        <div className="grid grid-cols-11 h-full">
-          {rows.map((r) => (
-            <div key={r.stop} style={{ background: r.css }} />
-          ))}
+        <div className="flex flex-col h-full">
+          <div className="grid grid-cols-11 flex-1">
+            {rows.map((r) => (
+              <div key={r.stop} style={{ background: r.css }} />
+            ))}
+          </div>
+          <div className="flex items-center justify-between px-3 py-1.5 bg-[var(--color-bg)] border-t border-[var(--color-border)]">
+            <span className="mono text-[9.5px] text-[var(--color-fg-dim)]">
+              anchor oklch(0.66 0.2 25)
+            </span>
+            <span className="mono text-[9.5px] text-[var(--color-fg-dim)]">
+              11 stops · even ΔL
+            </span>
+          </div>
         </div>
       }
     />

@@ -52,6 +52,25 @@ export function Layout() {
           ))}
         </nav>
 
+        <div className="px-6 pt-6 pb-2 flex flex-col gap-1.5 text-[13px]">
+          <a
+            href="https://medium.com/design-bootcamp/color-is-finally-ok-82f368f3408c"
+            target="_blank"
+            rel="noreferrer"
+            className="text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
+          >
+            Read the article ↗
+          </a>
+          <a
+            href="https://github.com/pawelklasa/okay-tools"
+            target="_blank"
+            rel="noreferrer"
+            className="text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
+          >
+            GitHub ↗
+          </a>
+        </div>
+
         <div className="px-3 pt-6">
           <p className="px-3 mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)] mb-1.5">
             Soon
@@ -69,23 +88,8 @@ export function Layout() {
           </ul>
         </div>
 
-        <div className="mt-auto p-6 text-xs text-[var(--color-fg-dim)] space-y-1">
-          <a
-            href="https://medium.com/design-bootcamp/color-is-finally-ok-82f368f3408c"
-            target="_blank"
-            rel="noreferrer"
-            className="block hover:text-[var(--color-fg-muted)]"
-          >
-            Read the article ↗
-          </a>
-          <a
-            href="https://github.com/pawelklasa/okay-tools"
-            target="_blank"
-            rel="noreferrer"
-            className="block hover:text-[var(--color-fg-muted)]"
-          >
-            GitHub ↗
-          </a>
+        <div className="mt-auto p-6 text-xs text-[var(--color-fg-dim)]">
+          <p className="mono">v0.1 · MIT</p>
         </div>
       </aside>
 

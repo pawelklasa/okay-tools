@@ -337,14 +337,14 @@ function RevealStrip({
           render={(r) => oklchToHex(r.oklch)}
         />
         <Strip
-          caption="What HSL thinks they are"
+          caption="What HSL claims they are"
           subcaption="Greyscale at the L value HSL says"
           rows={successes}
           render={(r) => `oklch(${r.hsl.l} 0 0)`}
         />
         <DeltaStrip rows={successes} />
         <Strip
-          caption="What they actually are"
+          caption="What they actually look like"
           subcaption="Greyscale at the true perceptual L"
           rows={successes}
           render={(r) => `oklch(${r.literal.l} 0 0)`}
