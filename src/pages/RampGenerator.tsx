@@ -67,7 +67,10 @@ export function RampGenerator() {
   };
 
   const copyShare = async () => {
-    await navigator.clipboard.writeText(window.location.href);
+    const s = encodeRamp({ anchor, name, curve });
+    const base = `${window.location.origin}${window.location.pathname}`;
+    const url = `${base}#/ramp?s=${s}`;
+    await navigator.clipboard.writeText(url);
     setShareCopied(true);
     setTimeout(() => setShareCopied(false), 1500);
   };
