@@ -139,8 +139,8 @@ export function RampGenerator() {
             label="Chroma · C"
             value={anchor.c}
             min={0}
-            max={0.4}
-            step={0.001}
+            max={0.33}
+            step={0.005}
             onChange={(v) => setAnchor({ ...anchor, c: v })}
             display={anchor.c.toFixed(3)}
           />

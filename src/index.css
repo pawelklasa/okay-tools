@@ -137,6 +137,10 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: 0 0 0 1px var(--color-border-strong);
 }
 input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.1); }
+input[type="range"]:focus { outline: none; }
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 1px var(--color-border-strong), 0 0 0 4px color-mix(in oklch, var(--color-accent-500) 30%, transparent);
+}
 
 input[type="color"] {
   -webkit-appearance: none;
