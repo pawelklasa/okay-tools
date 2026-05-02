@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 
 const tools = [
+  { to: "/hsl-to-oklch", label: "HSL → OKLCH" },
   { to: "/ramp", label: "Ramp" },
   { to: "/gradient", label: "Gradient" },
   { to: "/hsl-lies", label: "HSL Lies" },
@@ -9,11 +10,7 @@ const tools = [
 ];
 
 const soon = [
-  "HSL → OKLCH migrator",
   "Palette builder",
-  "Colourblind sim",
-  "Data-viz scales",
-  "Gamut visualiser",
   "Figma plugin",
 ];
 

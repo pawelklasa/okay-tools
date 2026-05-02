@@ -238,3 +238,151 @@ function round(n: number, digits = 3): number {
 }
 
 export { formatCss };
+
+// ---------------------------------------------------------------------------
+// HSL → OKLCH migration
+// ---------------------------------------------------------------------------
+
+const toHsl = converter("hsl");
+
+export type HslConvertMode = "literal" | "perceptual";
+
+export interface HslConvertResult {
+  /** Original input string (trimmed). */
+  input: string;
+  /** OKLCH chosen for output (literal or perceptual). */
+  oklch: OKLCH;
+  /** Literal OKLCH (always the appearance-preserving conversion). */
+  literal: OKLCH;
+  /** HSL channels parsed from the input. */
+  hsl: { h: number; s: number; l: number };
+  /** Difference between HSL's claimed L (0..1) and literal OKLCH L (0..1). */
+  lDrift: number;
+  /** True if the input string was an hsl()/hsla() value. */
+  wasHsl: boolean;
+  /** sRGB gamut state of the chosen oklch. */
+  inSrgb: boolean;
+  inP3: boolean;
+  /** If chroma had to be reduced to fit sRGB, the original chroma. Else null. */
+  chromaClipped: { from: number; to: number } | null;
+  /** CSS string of the chosen oklch. */
+  css: string;
+}
+
+export interface HslConvertError {
+  input: string;
+  error: string;
+}
+
+export type HslConvertEntry =
+  | { ok: true; value: HslConvertResult }
+  | { ok: false; value: HslConvertError };
+
+const HSL_TOKEN_RE = /\bhsla?\([^)]*\)/gi;
+
+export function isHslString(s: string): boolean {
+  return /^\s*hsla?\(/i.test(s);
+}
+
+/** Convert one input string. Accepts any culori-parseable colour. */
+export function convertHslLine(
+  input: string,
+  mode: HslConvertMode,
+): HslConvertEntry {
+  const trimmed = input.trim();
+  if (!trimmed) return { ok: false, value: { input, error: "empty" } };
+  const parsed = parse(trimmed);
+  if (!parsed) {
+    return { ok: false, value: { input: trimmed, error: `couldn't parse ${trimmed}` } };
+  }
+  const hslC = toHsl(parsed)!;
+  const literalC = toOklch(parsed)!;
+  const hsl = {
+    h: hslC.h ?? 0,
+    s: hslC.s ?? 0,
+    l: hslC.l ?? 0,
+  };
+  const literal: OKLCH = {
+    l: literalC.l ?? 0,
+    c: literalC.c ?? 0,
+    h: literalC.h ?? hsl.h,
+  };
+
+  let chosen: OKLCH;
+  if (mode === "literal") {
+    chosen = literal;
+  } else {
+    // Perceptual: remap HSL's L (0..1) to a useful OKLCH L range, keep literal chroma & hue.
+    const lMin = 0.13;
+    const lMax = 0.985;
+    const newL = lMin + hsl.l * (lMax - lMin);
+    chosen = { l: newL, c: literal.c, h: literal.h };
+  }
+
+  // Clamp to sRGB and report whether chroma was reduced.
+  const beforeC = chosen.c;
+  const clamped = clampToSrgb(chosen);
+  const chromaReduced = beforeC - clamped.c > 0.0005;
+  const finalC: OKLCH = clamped;
+
+  return {
+    ok: true,
+    value: {
+      input: trimmed,
+      oklch: finalC,
+      literal,
+      hsl,
+      lDrift: hsl.l - literal.l,
+      wasHsl: isHslString(trimmed),
+      inSrgb: isInSrgb(finalC),
+      inP3: isInP3(finalC),
+      chromaClipped: chromaReduced ? { from: beforeC, to: clamped.c } : null,
+      css: oklchCss(finalC),
+    },
+  };
+}
+
+/** Parse multiline input — one colour per non-empty line. */
+export function convertHslLines(
+  text: string,
+  mode: HslConvertMode,
+): HslConvertEntry[] {
+  return text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0)
+    .map((l) => convertHslLine(l, mode));
+}
+
+export interface CssReplaceMatch {
+  from: string;
+  to: string;
+  result: HslConvertResult;
+  /** Character index of the match in the original input. */
+  index: number;
+}
+
+export interface CssReplaceOutput {
+  output: string;
+  matches: CssReplaceMatch[];
+  errors: { from: string; index: number; error: string }[];
+}
+
+/** Find every hsl()/hsla() occurrence in CSS text and replace with oklch(). */
+export function replaceHslInCss(
+  text: string,
+  mode: HslConvertMode,
+): CssReplaceOutput {
+  const matches: CssReplaceMatch[] = [];
+  const errors: { from: string; index: number; error: string }[] = [];
+  const output = text.replace(HSL_TOKEN_RE, (raw, offset: number) => {
+    const entry = convertHslLine(raw, mode);
+    if (entry.ok) {
+      matches.push({ from: raw, to: entry.value.css, result: entry.value, index: offset });
+      return entry.value.css;
+    }
+    errors.push({ from: raw, index: offset, error: entry.value.error });
+    return raw;
+  });
+  return { output, matches, errors };
+}
