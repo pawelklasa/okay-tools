@@ -1,27 +1,25 @@
-import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 
 const tools = [
-  { to: "/ramp", label: "Ramp", hint: "Generate" },
-  { to: "/gradient", label: "Gradient", hint: "Compare" },
-  { to: "/hsl-lies", label: "HSL Lies", hint: "Demo" },
-  { to: "/contrast", label: "Contrast", hint: "WCAG / APCA" },
-  { to: "/dark-mode", label: "Dark Mode", hint: "Invert" },
+  { to: "/ramp", label: "Ramp" },
+  { to: "/gradient", label: "Gradient" },
+  { to: "/hsl-lies", label: "HSL Lies" },
+  { to: "/contrast", label: "Contrast" },
+  { to: "/dark-mode", label: "Dark Mode" },
 ];
 
 export function Layout() {
-  const location = useLocation();
-  const isHome = location.pathname === "/";
-
   return (
-    <div className="min-h-full grid grid-cols-1 md:grid-cols-[240px_1fr]">
-      <aside className="hidden md:flex flex-col border-r border-[var(--color-border)] bg-[var(--color-bg)] sticky top-0 h-screen">
-        <div className="px-5 py-5 border-b border-[var(--color-border)]">
+    <div className="min-h-full grid grid-cols-1 md:grid-cols-[220px_1fr]">
+      {/* Sidebar (desktop) */}
+      <aside className="hidden md:flex flex-col bg-[var(--color-bg)] sticky top-0 h-screen border-r border-[var(--color-border)]">
+        <div className="px-6 pt-7 pb-8">
           <Link to="/" className="flex items-center gap-2.5">
             <span
-              className="w-7 h-7 rounded-md"
+              className="w-6 h-6 rounded-md"
               style={{
                 background:
-                  "conic-gradient(from 0deg, oklch(0.7 0.18 30), oklch(0.7 0.18 90), oklch(0.7 0.18 150), oklch(0.7 0.18 210), oklch(0.7 0.18 270), oklch(0.7 0.18 330), oklch(0.7 0.18 30))",
+                  "conic-gradient(from 0deg, oklch(0.72 0.18 30), oklch(0.72 0.18 110), oklch(0.72 0.18 200), oklch(0.72 0.18 290), oklch(0.72 0.18 30))",
               }}
             />
             <span className="font-semibold tracking-tight text-[15px]">
@@ -30,74 +28,50 @@ export function Layout() {
           </Link>
         </div>
 
-        <nav className="flex-1 p-3 flex flex-col gap-0.5">
-          <p className="px-3 pt-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-fg-dim)]">
-            Tools
-          </p>
+        <nav className="px-3 flex flex-col gap-0.5">
           {tools.map((t) => (
             <NavLink
               key={t.to}
               to={t.to}
               className={({ isActive }) =>
-                `group flex items-center justify-between px-3 py-2 rounded-md text-sm transition ${
+                `px-3 py-2 rounded-md text-[14px] transition ${
                   isActive
-                    ? "bg-[var(--color-surface-2)] text-[var(--color-fg)]"
-                    : "text-[var(--color-fg-muted)] hover:bg-[var(--color-surface)] hover:text-[var(--color-fg)]"
+                    ? "text-[var(--color-fg)] bg-[var(--color-surface)]"
+                    : "text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
                 }`
               }
             >
-              <span>{t.label}</span>
-              <span className="text-[10px] uppercase tracking-wider text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg-muted)]">
-                {t.hint}
-              </span>
+              {t.label}
             </NavLink>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-[var(--color-border)] flex flex-col gap-3">
+        <div className="mt-auto p-6 text-xs text-[var(--color-fg-dim)] space-y-1">
           <a
             href="https://medium.com/design-bootcamp/color-is-finally-ok-82f368f3408c"
             target="_blank"
             rel="noreferrer"
-            className="block p-3 rounded-md bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-border-strong)] transition"
+            className="block hover:text-[var(--color-fg-muted)]"
           >
-            <p className="text-[10px] uppercase tracking-wider text-[var(--color-fg-dim)] mb-1">
-              The article
-            </p>
-            <p className="text-sm font-medium leading-snug">Color is finally OK →</p>
-          </a>
-          <a
-            href="https://www.buymeacoffee.com/pawelklasa"
-            target="_blank"
-            rel="noreferrer"
-            className="text-center px-3 py-2 rounded-md bg-[var(--color-fg)] text-[var(--color-bg)] text-sm font-medium hover:opacity-90 transition"
-          >
-            Buy me a coffee
+            Read the article ↗
           </a>
           <a
             href="https://github.com/pawelklasa/okay-tools"
             target="_blank"
             rel="noreferrer"
-            className="text-center text-xs text-[var(--color-fg-dim)] hover:text-[var(--color-fg-muted)]"
+            className="block hover:text-[var(--color-fg-muted)]"
           >
             GitHub ↗
           </a>
         </div>
       </aside>
 
+      {/* Mobile top bar */}
       <header className="md:hidden border-b border-[var(--color-border)] sticky top-0 bg-[var(--color-bg)] z-10">
         <div className="px-4 py-3 flex items-center justify-between">
           <Link to="/" className="font-semibold tracking-tight">
             okay<span className="text-[var(--color-fg-dim)]">.tools</span>
           </Link>
-          <a
-            href="https://www.buymeacoffee.com/pawelklasa"
-            target="_blank"
-            rel="noreferrer"
-            className="text-xs px-3 py-1.5 rounded-md bg-[var(--color-fg)] text-[var(--color-bg)] font-medium"
-          >
-            ☕
-          </a>
         </div>
         <nav className="flex gap-1 px-2 pb-2 overflow-x-auto">
           {tools.map((t) => (
@@ -107,7 +81,7 @@ export function Layout() {
               className={({ isActive }) =>
                 `whitespace-nowrap px-3 py-1.5 rounded-md text-sm ${
                   isActive
-                    ? "bg-[var(--color-surface-2)]"
+                    ? "bg-[var(--color-surface)] text-[var(--color-fg)]"
                     : "text-[var(--color-fg-muted)]"
                 }`
               }
@@ -118,9 +92,22 @@ export function Layout() {
         </nav>
       </header>
 
-      <main className={isHome ? "" : "animate-in"}>
+      {/* Main */}
+      <main className="min-w-0 animate-in">
         <Outlet />
       </main>
+
+      {/* Floating BMC — top right, fixed */}
+      <a
+        href="https://www.buymeacoffee.com/pawelklasa"
+        target="_blank"
+        rel="noreferrer"
+        className="fixed top-4 right-4 md:top-5 md:right-6 z-40 inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#FFDD00] text-black text-[13px] font-semibold shadow-[0_4px_14px_rgba(0,0,0,0.35)] hover:scale-[1.02] active:scale-[0.99] transition"
+        aria-label="Buy me a coffee"
+      >
+        <span aria-hidden>☕</span>
+        <span className="hidden sm:inline">Buy me a coffee</span>
+      </a>
     </div>
   );
 }

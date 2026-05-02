@@ -12,15 +12,15 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="px-8 lg:px-12 pt-10 pb-8 border-b border-[var(--color-border)]">
+    <header className="px-8 lg:px-16 pt-12 pb-10">
       <div className="flex items-end justify-between gap-6 flex-wrap">
         <div className="max-w-2xl">
           {eyebrow && (
-            <p className="mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-accent-400)] mb-3">
+            <p className="mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-fg-dim)] mb-3">
               {eyebrow}
             </p>
           )}
-          <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-[var(--color-fg)]">
+          <h1 className="text-[32px] md:text-[40px] font-semibold tracking-[-0.02em] text-[var(--color-fg)] leading-[1.1]">
             {title}
           </h1>
           {description && (
