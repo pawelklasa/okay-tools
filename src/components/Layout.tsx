@@ -5,7 +5,7 @@ const tools = [
   { to: "/gradient", label: "Gradient" },
   { to: "/hsl-lies", label: "HSL Lies" },
   { to: "/contrast", label: "Contrast" },
-  { to: "/dark-mode", label: "Dark Mode" },
+  { to: "/dark-mode", label: "Theme Builder" },
 ];
 
 const soon = [

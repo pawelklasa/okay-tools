@@ -28,8 +28,8 @@ const tools = [
   },
   {
     to: "/dark-mode",
-    title: "Dark Mode Inverter",
-    blurb: "Flip the L axis. Light becomes dark, the right way.",
+    title: "Light + Dark Theme Builder",
+    blurb: "One brand colour. Both modes. Semantic tokens you can paste into CSS, Tailwind or SCSS.",
     accent: { l: 0.66, c: 0.2, h: 290 } as OKLCH,
   },
 ];

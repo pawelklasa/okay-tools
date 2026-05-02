@@ -1,119 +1,261 @@
 import { useMemo, useState } from "react";
 import {
   buildRamp,
-  formatRamp,
   invertRamp,
+  oklchCss,
   parseColor,
-  RAMP_STOPS,
   type OKLCH,
+  type RampStop,
 } from "../lib/oklch";
-import { Field, HexInput, PageHeader } from "../components/ui";
+import { Button, Field, HexInput, PageHeader } from "../components/ui";
+
+type Ramp = Record<RampStop, OKLCH>;
+
+/**
+ * Maps a ramp into semantic theme tokens (the names a designer/dev actually
+ * wires up in their app). For light mode we use the natural ramp; for dark
+ * mode the inverted ramp — same token names, opposite L axis.
+ */
+function semanticTokens(ramp: Ramp) {
+  return {
+    bg: ramp[50],
+    surface: ramp[100],
+    "surface-2": ramp[200],
+    border: ramp[300],
+    "border-strong": ramp[400],
+    "fg-dim": ramp[500],
+    "fg-muted": ramp[700],
+    fg: ramp[900],
+    "fg-strong": ramp[950],
+    accent: ramp[500],
+    "accent-fg": ramp[50],
+    "accent-hover": ramp[600],
+  } as const;
+}
+
+type SemanticTokens = ReturnType<typeof semanticTokens>;
 
 export function DarkModeInverter() {
   const [hex, setHex] = useState("#2563eb");
-  const anchor: OKLCH = parseColor(hex) ?? { l: 0.62, c: 0.2, h: 255 };
+  const [name, setName] = useState("brand");
+  const [exportId, setExportId] = useState<"css" | "tailwind" | "scss">("css");
 
+  const anchor: OKLCH = parseColor(hex) ?? { l: 0.62, c: 0.2, h: 255 };
   const light = useMemo(() => buildRamp({ anchor, taperChroma: true }), [anchor]);
   const dark = useMemo(() => invertRamp(light), [light]);
 
-  const lightRows = formatRamp(light);
-  const darkRows = formatRamp(dark);
+  const lightTokens = semanticTokens(light);
+  const darkTokens = semanticTokens(dark);
+
+  const exported = formatExport(exportId, name, lightTokens, darkTokens);
+
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    await navigator.clipboard.writeText(exported);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
 
   return (
     <>
       <PageHeader
-        eyebrow="Dark mode inverter"
-        title="Flip the L axis. Done."
-        description="Build a light ramp. The dark version is the same ramp, mirrored: 50 ↔ 950, 100 ↔ 900. No tweaking. The way the article describes it."
+        eyebrow="Light + Dark theme builder"
+        title="One brand colour. Both modes. Same token names."
+        description="Paste your brand colour. Get a complete light + dark theme with semantic tokens (bg, surface, fg, accent…) ready to drop into your CSS, Tailwind config or SCSS."
       />
 
-      <div className="px-8 lg:px-12 pt-8 max-w-sm">
-        <Field label="Anchor">
+      <div className="px-8 lg:px-12 pt-6 grid sm:grid-cols-[260px_200px] gap-5 max-w-2xl">
+        <Field label="Brand colour">
           <HexInput value={hex} onChange={setHex} />
+        </Field>
+        <Field label="Token prefix">
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value.replace(/[^a-z0-9-]/gi, "").toLowerCase())}
+          />
         </Field>
       </div>
 
-      <div className="px-8 lg:px-12 py-10 grid lg:grid-cols-2 gap-5">
-        <Preview title="Light" rows={lightRows} bg="#fafafa" fg="#0a0a0a" />
-        <Preview title="Dark" rows={darkRows} bg="#0a0a0a" fg="#fafafa" />
+      {/* Side-by-side previews using the actual semantic tokens */}
+      <div className="px-8 lg:px-12 py-8 grid lg:grid-cols-2 gap-5">
+        <ThemePreview label="Light" tokens={lightTokens} />
+        <ThemePreview label="Dark" tokens={darkTokens} />
       </div>
 
-      <div className="mx-8 lg:mx-12 mb-12 grid grid-cols-11 rounded-[var(--radius)] overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
-        {RAMP_STOPS.map((s, i) => (
-          <div
-            key={s}
-            className="text-center mono text-[10px] py-2 border-r border-[var(--color-border)] last:border-r-0 text-[var(--color-fg-dim)]"
-          >
-            <span className="text-[var(--color-fg)]">{s}</span>{" "}
-            <span className="opacity-60">↔</span>{" "}
-            <span>{RAMP_STOPS[RAMP_STOPS.length - 1 - i]}</span>
+      {/* Token table — the useful bit */}
+      <div className="px-8 lg:px-12 pb-8">
+        <h2 className="mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-fg-dim)] mb-3">
+          Token map
+        </h2>
+        <div className="rounded-[var(--radius)] border border-[var(--color-border)] overflow-hidden">
+          <table className="w-full mono text-xs">
+            <thead className="bg-[var(--color-surface)] text-[var(--color-fg-dim)]">
+              <tr>
+                <th className="text-left px-4 py-2.5 font-medium uppercase tracking-wider text-[10px]">
+                  Token
+                </th>
+                <th className="text-left px-4 py-2.5 font-medium uppercase tracking-wider text-[10px]">
+                  Light
+                </th>
+                <th className="text-left px-4 py-2.5 font-medium uppercase tracking-wider text-[10px]">
+                  Dark
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.keys(lightTokens).map((k) => {
+                const key = k as keyof SemanticTokens;
+                return (
+                  <tr key={k} className="border-t border-[var(--color-border)]">
+                    <td className="px-4 py-2 text-[var(--color-fg)]">--{name}-{k}</td>
+                    <td className="px-4 py-2">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-3.5 h-3.5 rounded-sm border border-[var(--color-border)]"
+                          style={{ background: oklchCss(lightTokens[key]) }}
+                        />
+                        <span className="text-[var(--color-fg-muted)]">
+                          {oklchCss(lightTokens[key])}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-2">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-3.5 h-3.5 rounded-sm border border-[var(--color-border)]"
+                          style={{ background: oklchCss(darkTokens[key]) }}
+                        />
+                        <span className="text-[var(--color-fg-muted)]">
+                          {oklchCss(darkTokens[key])}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Export */}
+      <div className="px-8 lg:px-12 pb-12">
+        <div className="rounded-[var(--radius)] border border-[var(--color-border)] overflow-hidden">
+          <div className="flex items-center gap-1 p-2 border-b border-[var(--color-border)] bg-[var(--color-surface)] overflow-x-auto">
+            {(
+              [
+                { id: "css", label: "CSS variables" },
+                { id: "tailwind", label: "Tailwind v4 @theme" },
+                { id: "scss", label: "SCSS" },
+              ] as const
+            ).map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setExportId(f.id)}
+                className={`whitespace-nowrap px-3 py-1.5 rounded text-xs transition ${
+                  exportId === f.id
+                    ? "bg-[var(--color-surface-2)] text-[var(--color-fg)]"
+                    : "text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+            <Button onClick={copy} variant="primary" className="ml-auto">
+              {copied ? "Copied ✓" : "Copy"}
+            </Button>
           </div>
-        ))}
+          <pre className="mono text-xs text-[var(--color-fg-muted)] leading-relaxed p-5 overflow-x-auto whitespace-pre">
+            {exported}
+          </pre>
+        </div>
       </div>
     </>
   );
 }
 
-function Preview({
-  title,
-  rows,
-  bg,
-  fg,
-}: {
-  title: string;
-  rows: ReturnType<typeof formatRamp>;
-  bg: string;
-  fg: string;
-}) {
+function ThemePreview({ label, tokens }: { label: string; tokens: SemanticTokens }) {
+  const t = (k: keyof SemanticTokens) => oklchCss(tokens[k]);
   return (
     <div
-      className="rounded-[var(--radius)] border border-[var(--color-border)] overflow-hidden"
-      style={{ background: bg, color: fg }}
+      className="rounded-[var(--radius)] overflow-hidden border"
+      style={{ background: t("bg"), borderColor: t("border"), color: t("fg") }}
     >
-      <div className="px-6 py-4 border-b" style={{ borderColor: rows[2].css }}>
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold tracking-tight">{title}</h3>
-          <span
-            className="mono text-[10px] uppercase tracking-wider opacity-70"
-          >
-            {rows.length} steps
-          </span>
-        </div>
+      <div className="px-5 py-3 border-b flex items-center justify-between" style={{ borderColor: t("border") }}>
+        <span className="text-sm font-semibold">{label}</span>
+        <span className="mono text-[10px] uppercase tracking-wider" style={{ color: t("fg-dim") }}>
+          live preview
+        </span>
       </div>
 
-      <div className="grid grid-cols-11">
-        {rows.map((r) => (
-          <div key={r.stop} className="h-10" style={{ background: r.css }} />
-        ))}
-      </div>
-
-      <div className="p-6 space-y-4">
+      <div className="p-5 space-y-4">
+        {/* Card */}
         <div
           className="rounded-[var(--radius-sm)] p-4 border"
-          style={{ background: rows[1].css, borderColor: rows[2].css, color: rows[9].css }}
+          style={{ background: t("surface"), borderColor: t("border") }}
         >
-          <div className="text-sm font-semibold mb-1">Card title</div>
-          <div className="text-xs opacity-80 leading-relaxed">
-            Body text rendered on a {rows[1].stop} surface using {rows[9].stop} ink. The two
-            stops are {Math.abs(rows[1].oklch.l - rows[9].oklch.l).toFixed(2)} apart on L.
+          <div className="text-sm font-semibold" style={{ color: t("fg-strong") }}>
+            Card title
+          </div>
+          <div className="text-xs mt-1 leading-relaxed" style={{ color: t("fg-muted") }}>
+            Body text on a surface. The contrast is wired by token name, not stop number.
           </div>
         </div>
 
+        {/* Buttons */}
         <div className="flex gap-2">
           <button
             className="flex-1 px-4 py-2 rounded-[var(--radius-sm)] text-sm font-medium"
-            style={{ background: rows[5].css, color: rows[0].css }}
+            style={{ background: t("accent"), color: t("accent-fg") }}
           >
-            Primary · 500 / 50
+            Primary
           </button>
           <button
             className="flex-1 px-4 py-2 rounded-[var(--radius-sm)] text-sm font-medium border"
-            style={{ borderColor: rows[3].css, color: rows[7].css, background: "transparent" }}
+            style={{ borderColor: t("border-strong"), color: t("fg-muted"), background: "transparent" }}
           >
             Secondary
           </button>
         </div>
+
+        {/* Input */}
+        <input
+          placeholder="email@example.com"
+          className="w-full px-3 py-2 rounded-[var(--radius-sm)] text-sm border focus:outline-none"
+          style={{ background: t("surface-2"), borderColor: t("border"), color: t("fg") }}
+        />
+
+        {/* Body text scale */}
+        <div className="text-xs leading-relaxed" style={{ color: t("fg-dim") }}>
+          Caption / hint
+        </div>
       </div>
     </div>
   );
+}
+
+function tokenLines(prefix: string, tokens: SemanticTokens, sep: string) {
+  return Object.entries(tokens)
+    .map(([k, v]) => `  --${prefix}-${k}${sep} ${oklchCss(v)};`)
+    .join("\n");
+}
+
+function formatExport(
+  id: "css" | "tailwind" | "scss",
+  prefix: string,
+  light: SemanticTokens,
+  dark: SemanticTokens,
+): string {
+  if (id === "css") {
+    return `:root {\n${tokenLines(prefix, light, ":")}\n}\n\n[data-theme="dark"], .dark {\n${tokenLines(prefix, dark, ":")}\n}\n`;
+  }
+  if (id === "tailwind") {
+    return `@theme {\n${tokenLines(prefix, light, ":")}\n}\n\n@layer base {\n  .dark {\n${tokenLines(prefix, dark, ":")}\n  }\n}\n`;
+  }
+  // scss
+  const toScss = (tokens: SemanticTokens, suffix: string) =>
+    Object.entries(tokens)
+      .map(([k, v]) => `$${prefix}-${k}-${suffix}: ${oklchCss(v)};`)
+      .join("\n");
+  return `// Light\n${toScss(light, "light")}\n\n// Dark\n${toScss(dark, "dark")}\n`;
 }
