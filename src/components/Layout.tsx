@@ -97,9 +97,9 @@ export function Layout() {
         <Outlet />
       </main>
 
-      {/* Floating BMC — top right, fixed */}
+      {/* Floating tip jar — top right, fixed */}
       <a
-        href="https://www.buymeacoffee.com/pawelklasa"
+        href="https://buy.stripe.com/fZueVdgDiaqo9xyaIZ3gk00"
         target="_blank"
         rel="noreferrer"
         className="fixed top-4 right-4 md:top-5 md:right-6 z-40 inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#FFDD00] text-black text-[13px] font-semibold shadow-[0_4px_14px_rgba(0,0,0,0.35)] hover:scale-[1.02] active:scale-[0.99] transition"
