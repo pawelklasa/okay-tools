@@ -130,11 +130,11 @@ function Hero() {
       </div>
 
       {/* Headline directly underneath the demo */}
-      <h1 className="mt-7 text-[40px] md:text-[56px] lg:text-[64px] font-semibold tracking-[-0.035em] leading-[1.04] text-[var(--color-fg)] max-w-4xl">
+      <h1 className="mt-3 text-[40px] md:text-[56px] lg:text-[64px] font-semibold tracking-[-0.035em] leading-[1.04] text-[var(--color-fg)] max-w-4xl">
         OKLCH tools that{" "}
         <span className="text-[var(--color-fg-dim)]">show you the difference.</span>
       </h1>
-      <p className="mt-5 text-[16px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl">
+      <p className="mt-4 text-[16px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl">
         Every popular colour-picker site treats OKLCH as the answer. The interesting part is what
         it reveals about the colours you've been shipping. That's what this is. Companion to{" "}
         <a
@@ -157,7 +157,7 @@ function Hero() {
         </Link>
         <Link
           to="/hsl-lies"
-          className="inline-flex items-center gap-2 px-4 py-3 rounded-full text-[var(--color-fg-muted)] text-sm font-medium hover:text-[var(--color-fg)] transition"
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[var(--color-border-strong)] text-[var(--color-fg-muted)] text-sm font-medium hover:text-[var(--color-fg)] hover:border-[var(--color-fg)] transition"
         >
           Or play with the lie →
         </Link>
@@ -270,11 +270,12 @@ function HslLiesCard() {
 // Migrator — drift bars
 function MigratorCard() {
   const samples = [
-    { label: "hsl(60 100% 50%)", drift: 0.47 },
-    { label: "hsl(120 100% 50%)", drift: 0.37 },
-    { label: "hsl(0 100% 50%)", drift: 0.04 },
-    { label: "hsl(240 100% 50%)", drift: -0.21 },
-  ];  return (
+    { label: "hsl(60 100% 50%)", swatch: "hsl(60 100% 50%)", drift: 0.47 },
+    { label: "hsl(120 100% 50%)", swatch: "hsl(120 100% 50%)", drift: 0.37 },
+    { label: "hsl(0 100% 50%)", swatch: "hsl(0 100% 50%)", drift: 0.04 },
+    { label: "hsl(240 100% 50%)", swatch: "hsl(240 100% 50%)", drift: -0.21 },
+  ];
+  return (
     <CardShell
       to="/hsl-to-oklch"
       title="HSL → OKLCH"
@@ -283,7 +284,11 @@ function MigratorCard() {
         <div className="px-4 py-4 flex flex-col gap-2">
           {samples.map((s) => (
             <div key={s.label} className="flex items-center gap-2.5">
-              <span className="mono text-[10px] text-[var(--color-fg-muted)] w-[120px] truncate">
+              <span
+                className="block w-3 h-3 rounded-sm border border-[var(--color-border-strong)] shrink-0"
+                style={{ background: s.swatch }}
+              />
+              <span className="mono text-[10px] text-[var(--color-fg-muted)] w-[110px] truncate">
                 {s.label}
               </span>
               <div className="relative h-2 flex-1 rounded-full bg-[var(--color-surface-2)] overflow-hidden">
