@@ -7,6 +7,7 @@ import {
   RAMP_STOPS,
   type OKLCH,
 } from "../lib/oklch";
+import { Field, HexInput, PageHeader } from "../components/ui";
 
 export function DarkModeInverter() {
   const [hex, setHex] = useState("#2563eb");
@@ -19,49 +20,37 @@ export function DarkModeInverter() {
   const darkRows = formatRamp(dark);
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
-      <header className="mb-8">
-        <h1 className="text-3xl font-semibold text-ink-950 tracking-tight">Dark Mode Inverter</h1>
-        <p className="text-ink-700 mt-2 max-w-2xl">
-          Build a light ramp. Flip the L axis. Watch dark mode behave — no extra tweaking.
-          50 ↔ 950, 100 ↔ 900, and so on.
-        </p>
-      </header>
+    <>
+      <PageHeader
+        eyebrow="Dark mode inverter"
+        title="Flip the L axis. Done."
+        description="Build a light ramp. The dark version is the same ramp, mirrored: 50 ↔ 950, 100 ↔ 900. No tweaking. The way the article describes it."
+      />
 
-      <div className="max-w-sm mb-8">
-        <label className="block">
-          <span className="block text-xs font-medium uppercase tracking-wider text-ink-600 mb-1.5">
-            Anchor
-          </span>
-          <div className="flex gap-2">
-            <input
-              type="color"
-              value={hex}
-              onChange={(e) => setHex(e.target.value)}
-              className="h-10 w-12 rounded border border-ink-300 cursor-pointer"
-            />
-            <input
-              value={hex}
-              onChange={(e) => setHex(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-md border border-ink-300 bg-white font-mono text-sm"
-            />
-          </div>
-        </label>
+      <div className="px-8 lg:px-12 pt-8 max-w-sm">
+        <Field label="Anchor">
+          <HexInput value={hex} onChange={setHex} />
+        </Field>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <Preview title="Light" rows={lightRows} bg="#ffffff" fg="#0a0a0a" />
+      <div className="px-8 lg:px-12 py-10 grid lg:grid-cols-2 gap-5">
+        <Preview title="Light" rows={lightRows} bg="#fafafa" fg="#0a0a0a" />
         <Preview title="Dark" rows={darkRows} bg="#0a0a0a" fg="#fafafa" />
       </div>
 
-      <div className="mt-6 grid grid-cols-11 rounded-lg overflow-hidden border border-ink-200">
+      <div className="mx-8 lg:mx-12 mb-12 grid grid-cols-11 rounded-[var(--radius)] overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
         {RAMP_STOPS.map((s, i) => (
-          <div key={s} className="text-center text-[10px] font-mono py-1 border-r border-ink-100 last:border-r-0">
-            {s} ↔ {RAMP_STOPS[RAMP_STOPS.length - 1 - i]}
+          <div
+            key={s}
+            className="text-center mono text-[10px] py-2 border-r border-[var(--color-border)] last:border-r-0 text-[var(--color-fg-dim)]"
+          >
+            <span className="text-[var(--color-fg)]">{s}</span>{" "}
+            <span className="opacity-60">↔</span>{" "}
+            <span>{RAMP_STOPS[RAMP_STOPS.length - 1 - i]}</span>
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 }
 
@@ -78,39 +67,52 @@ function Preview({
 }) {
   return (
     <div
-      className="rounded-xl border border-ink-200 overflow-hidden"
+      className="rounded-[var(--radius)] border border-[var(--color-border)] overflow-hidden"
       style={{ background: bg, color: fg }}
     >
-      <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
-        <h3 className="font-semibold">{title}</h3>
-        <span className="text-xs opacity-70">{rows.length} steps</span>
+      <div className="px-6 py-4 border-b" style={{ borderColor: rows[2].css }}>
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold tracking-tight">{title}</h3>
+          <span
+            className="mono text-[10px] uppercase tracking-wider opacity-70"
+          >
+            {rows.length} steps
+          </span>
+        </div>
       </div>
 
       <div className="grid grid-cols-11">
         {rows.map((r) => (
-          <div key={r.stop} className="aspect-square" style={{ background: r.css }} />
+          <div key={r.stop} className="h-10" style={{ background: r.css }} />
         ))}
       </div>
 
-      <div className="p-5 space-y-3">
-        <div className="rounded-lg p-4" style={{ background: rows[1].css, color: rows[9].css }}>
-          <div className="text-sm font-semibold">Card title</div>
-          <div className="text-xs opacity-90">
-            Body text rendered on a {rows[1].stop} surface using {rows[9].stop} ink.
+      <div className="p-6 space-y-4">
+        <div
+          className="rounded-[var(--radius-sm)] p-4 border"
+          style={{ background: rows[1].css, borderColor: rows[2].css, color: rows[9].css }}
+        >
+          <div className="text-sm font-semibold mb-1">Card title</div>
+          <div className="text-xs opacity-80 leading-relaxed">
+            Body text rendered on a {rows[1].stop} surface using {rows[9].stop} ink. The two
+            stops are {Math.abs(rows[1].oklch.l - rows[9].oklch.l).toFixed(2)} apart on L.
           </div>
         </div>
-        <button
-          className="w-full px-4 py-2 rounded-md text-sm font-medium"
-          style={{ background: rows[5].css, color: rows[0].css }}
-        >
-          Primary button (500 / 50)
-        </button>
-        <button
-          className="w-full px-4 py-2 rounded-md text-sm font-medium border"
-          style={{ borderColor: rows[3].css, color: rows[7].css }}
-        >
-          Secondary button (700 on transparent, 300 border)
-        </button>
+
+        <div className="flex gap-2">
+          <button
+            className="flex-1 px-4 py-2 rounded-[var(--radius-sm)] text-sm font-medium"
+            style={{ background: rows[5].css, color: rows[0].css }}
+          >
+            Primary · 500 / 50
+          </button>
+          <button
+            className="flex-1 px-4 py-2 rounded-[var(--radius-sm)] text-sm font-medium border"
+            style={{ borderColor: rows[3].css, color: rows[7].css, background: "transparent" }}
+          >
+            Secondary
+          </button>
+        </div>
       </div>
     </div>
   );

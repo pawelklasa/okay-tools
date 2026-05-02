@@ -1,62 +1,58 @@
 import { useState } from "react";
 import { converter, parse, formatHex } from "culori";
 import { oklchCss } from "../lib/oklch";
+import { PageHeader, Pill, Slider } from "../components/ui";
 
 const toHsl = converter("hsl");
 const toOklch = converter("oklch");
 
 export function HslLies() {
-  const [hue, setHue] = useState(255); // blue
+  const [hue, setHue] = useState(255);
   const [lightness, setLightness] = useState(50);
 
-  // HSL: keep H + S, vary L
   const hslColor = `hsl(${hue} 80% ${lightness}%)`;
   const hslHex = formatHex(parse(hslColor)!) ?? "#000";
   const hslAsOklch = toOklch(parse(hslColor)!)!;
 
-  // OKLCH: match anchor at L=0.62 with same hue, chroma 0.18, vary L proportionally
   const okL = 0.13 + (lightness / 100) * (0.985 - 0.13);
   const oklchColor = oklchCss({ l: okL, c: 0.18, h: hue });
   const oklchHex = formatHex(parse(oklchColor)!) ?? "#000";
   const oklchAsHsl = toHsl(parse(oklchColor)!)!;
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10">
-      <header className="mb-10">
-        <h1 className="text-3xl font-semibold text-ink-950 tracking-tight">HSL Lies, OKLCH Doesn’t</h1>
-        <p className="text-ink-700 mt-2 max-w-2xl">
-          Drag lightness on both. Same hue, same starting point. Watch what HSL does to the
-          colour at the extremes — and what OKLCH refuses to do.
-        </p>
-      </header>
+    <>
+      <PageHeader
+        eyebrow="HSL Lies, OKLCH Doesn't"
+        title="Drag lightness. See the lie."
+        description="Same hue input. Same lightness target. HSL drifts the colour and lies about brightness. OKLCH does what it says on the slider."
+      />
 
-      <div className="grid sm:grid-cols-2 gap-4 mb-8">
-        <Field label={`Hue — ${hue.toFixed(0)}°`}>
-          <input
-            type="range"
-            min={0}
-            max={360}
-            value={hue}
-            onChange={(e) => setHue(parseInt(e.target.value))}
-            className="w-full accent-brand-500"
-          />
-        </Field>
-        <Field label={`Lightness — ${lightness}%`}>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={lightness}
-            onChange={(e) => setLightness(parseInt(e.target.value))}
-            className="w-full accent-brand-500"
-          />
-        </Field>
+      <div className="px-8 lg:px-12 pt-8 max-w-2xl grid sm:grid-cols-2 gap-6">
+        <Slider
+          label="Hue"
+          value={hue}
+          min={0}
+          max={360}
+          step={1}
+          onChange={(v) => setHue(Math.round(v))}
+          display={`${hue}°`}
+        />
+        <Slider
+          label="Lightness"
+          value={lightness}
+          min={0}
+          max={100}
+          step={1}
+          onChange={(v) => setLightness(Math.round(v))}
+          display={`${lightness}%`}
+        />
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="px-8 lg:px-12 py-10 grid md:grid-cols-2 gap-5">
         <Card
           title="HSL"
-          subtitle="The lightness slider is mathematical, not perceptual."
+          subtitle="Lightness is a math midpoint, not a perception."
+          tag="warn"
           swatch={hslColor}
           rows={[
             ["css", hslColor],
@@ -64,11 +60,11 @@ export function HslLies() {
             ["actual L (OKLCH)", (hslAsOklch.l ?? 0).toFixed(3)],
             ["actual hue (OKLCH)", `${(hslAsOklch.h ?? 0).toFixed(1)}°`],
           ]}
-          tone="warn"
         />
         <Card
           title="OKLCH"
-          subtitle="Lightness means lightness. Hue stays where you put it."
+          subtitle="L means lightness. H stays where you put it."
+          tag="ok"
           swatch={oklchColor}
           rows={[
             ["css", oklchColor],
@@ -76,30 +72,19 @@ export function HslLies() {
             ["actual L (OKLCH)", okL.toFixed(3)],
             ["mapped HSL hue", `${(oklchAsHsl.h ?? 0).toFixed(1)}°`],
           ]}
-          tone="ok"
         />
       </div>
 
-      <section className="mt-12 p-6 rounded-xl bg-ink-100 border border-ink-200">
-        <p className="text-sm text-ink-700 leading-relaxed">
-          <strong className="text-ink-900">Try this:</strong> set hue to 255 (blue) and slide
-          lightness from 0 to 100. In HSL, the perceived brightness of pure blue at L=50% is
-          almost black. In OKLCH, L=0.5 actually looks like a midtone. Now try yellow (60°).
-          HSL at 50% glows; OKLCH at 0.5 sits politely in the middle.
+      <div className="mx-8 lg:mx-12 mb-12 p-6 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)]">
+        <p className="text-sm text-[var(--color-fg-muted)] leading-relaxed max-w-3xl">
+          <span className="text-[var(--color-fg)] font-semibold">Try it:</span> set hue to{" "}
+          <span className="mono">255</span> (blue). Slide lightness from 0 to 100. In HSL, blue
+          at L = 50% is almost black. In OKLCH, L = 0.5 actually looks like a midtone. Now try{" "}
+          <span className="mono">60</span> (yellow). HSL at 50% glows. OKLCH at 0.5 sits politely
+          in the middle.
         </p>
-      </section>
-    </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="block text-xs font-medium uppercase tracking-wider text-ink-600 mb-1.5">
-        {label}
-      </span>
-      {children}
-    </label>
+      </div>
+    </>
   );
 }
 
@@ -108,31 +93,32 @@ function Card({
   subtitle,
   swatch,
   rows,
-  tone,
+  tag,
 }: {
   title: string;
   subtitle: string;
   swatch: string;
   rows: [string, string][];
-  tone: "warn" | "ok";
+  tag: "warn" | "ok";
 }) {
   return (
-    <div
-      className={`rounded-xl border bg-white overflow-hidden ${
-        tone === "warn" ? "border-amber-200" : "border-emerald-200"
-      }`}
-    >
-      <div className="p-4 border-b border-ink-100">
-        <h3 className="text-lg font-semibold text-ink-900">{title}</h3>
-        <p className="text-sm text-ink-600">{subtitle}</p>
+    <div className="rounded-[var(--radius)] overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface)]">
+      <div className="px-5 py-4 border-b border-[var(--color-border)]">
+        <div className="flex items-center gap-2 mb-1">
+          <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
+          <Pill tone={tag}>{tag === "ok" ? "honest" : "lies"}</Pill>
+        </div>
+        <p className="text-sm text-[var(--color-fg-muted)]">{subtitle}</p>
       </div>
-      <div className="h-40" style={{ background: swatch }} />
-      <table className="w-full text-xs font-mono">
+      <div className="h-48" style={{ background: swatch }} />
+      <table className="w-full mono text-xs">
         <tbody>
           {rows.map(([k, v]) => (
-            <tr key={k} className="border-t border-ink-100">
-              <td className="px-4 py-1.5 text-ink-500 w-1/3">{k}</td>
-              <td className="px-4 py-1.5 text-ink-800">{v}</td>
+            <tr key={k} className="border-t border-[var(--color-border)]">
+              <td className="px-5 py-2 text-[var(--color-fg-dim)] w-1/3 uppercase tracking-wider text-[10px]">
+                {k}
+              </td>
+              <td className="px-5 py-2 text-[var(--color-fg)]">{v}</td>
             </tr>
           ))}
         </tbody>
