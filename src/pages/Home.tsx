@@ -86,7 +86,7 @@ export function Home() {
         </div>
       </section>
 
-      <footer className="mt-auto px-8 lg:px-16 py-8 flex flex-wrap gap-3 justify-between text-xs text-[var(--color-fg-dim)] border-t border-[var(--color-border)]">
+      <footer className="mt-auto px-8 lg:px-16 py-8 flex flex-wrap gap-x-6 gap-y-3 items-center justify-between text-xs text-[var(--color-fg-dim)] border-t border-[var(--color-border)]">
         <p>
           Built by{" "}
           <a
@@ -97,6 +97,40 @@ export function Home() {
           </a>
           .
         </p>
+        <div className="flex gap-5">
+          <a
+            href="https://medium.com/design-bootcamp/color-is-finally-ok-82f368f3408c"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-[var(--color-fg)]"
+          >
+            Article
+          </a>
+          <a
+            href="https://github.com/pawelklasa/okay-tools"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-[var(--color-fg)]"
+          >
+            GitHub
+          </a>
+          <a
+            href="https://buy.stripe.com/fZueVdgDiaqo9xyaIZ3gk00"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-[var(--color-fg)]"
+          >
+            Tip
+          </a>
+          <a
+            href="https://twitter.com/pawelklasa"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-[var(--color-fg)]"
+          >
+            Twitter
+          </a>
+        </div>
         <p className="mono">v0.1 · MIT</p>
       </footer>
     </div>

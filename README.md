@@ -1,5 +1,9 @@
 # okay.tools
 
+[![Live](https://img.shields.io/badge/live-pawelklasa.github.io%2Fokay--tools-00b6fe?style=flat-square)](https://pawelklasa.github.io/okay-tools/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-7a7a7a?style=flat-square)](LICENSE)
+[![Article](https://img.shields.io/badge/read-the%20article-f5f5f5?style=flat-square)](https://medium.com/design-bootcamp/color-is-finally-ok-82f368f3408c)
+
 A small, free suite of OKLCH-native colour utilities for designers and developers — the companion tools for the Medium article ["Color is finally OK"](https://medium.com/design-bootcamp/color-is-finally-ok-82f368f3408c).
 
 **Live:** https://pawelklasa.github.io/okay-tools/
