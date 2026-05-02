@@ -115,7 +115,7 @@ export function Home() {
             GitHub
           </a>
           <a
-            href="https://buy.stripe.com/fZueVdgDiaqo9xyaIZ3gk00"
+            href="https://buy.stripe.com/5kQ6oJ6Qebt63GN9G71wY00"
             target="_blank"
             rel="noreferrer"
             className="hover:text-[var(--color-fg)]"
