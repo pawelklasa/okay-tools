@@ -122,14 +122,6 @@ export function Home() {
           >
             Tip
           </a>
-          <a
-            href="https://twitter.com/pawelklasa"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-[var(--color-fg)]"
-          >
-            Twitter
-          </a>
         </div>
         <p className="mono">v0.1 · MIT</p>
       </footer>
