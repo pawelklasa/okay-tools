@@ -1,0 +1,9 @@
+node_modules
+dist
+dist-ssr
+.netlify
+.env
+.env.local
+.DS_Store
+*.log
+.vite

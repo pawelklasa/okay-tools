@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+  /* Neutrals — built in OKLCH with even L spacing. Dogfooding the article. */
+  --color-ink-50:  oklch(0.985 0.002 270);
+  --color-ink-100: oklch(0.96  0.003 270);
+  --color-ink-200: oklch(0.91  0.005 270);
+  --color-ink-300: oklch(0.83  0.007 270);
+  --color-ink-400: oklch(0.70  0.010 270);
+  --color-ink-500: oklch(0.58  0.012 270);
+  --color-ink-600: oklch(0.46  0.014 270);
+  --color-ink-700: oklch(0.36  0.014 270);
+  --color-ink-800: oklch(0.26  0.012 270);
+  --color-ink-900: oklch(0.18  0.010 270);
+  --color-ink-950: oklch(0.12  0.008 270);
+
+  /* Brand — saturated blue, perceptually flat across the ramp */
+  --color-brand-50:  oklch(0.97 0.02  255);
+  --color-brand-100: oklch(0.93 0.05  255);
+  --color-brand-200: oklch(0.86 0.10  255);
+  --color-brand-300: oklch(0.78 0.15  255);
+  --color-brand-400: oklch(0.70 0.18  255);
+  --color-brand-500: oklch(0.62 0.20  255);
+  --color-brand-600: oklch(0.54 0.20  255);
+  --color-brand-700: oklch(0.46 0.18  255);
+  --color-brand-800: oklch(0.38 0.14  255);
+  --color-brand-900: oklch(0.30 0.10  255);
+  --color-brand-950: oklch(0.22 0.06  255);
+
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ink-50);
+  color: var(--color-ink-900);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+}
+
+.checker {
+  background-image:
+    linear-gradient(45deg, oklch(0.9 0 0) 25%, transparent 25%),
+    linear-gradient(-45deg, oklch(0.9 0 0) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, oklch(0.9 0 0) 75%),
+    linear-gradient(-45deg, transparent 75%, oklch(0.9 0 0) 75%);
+  background-size: 12px 12px;
+  background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+}
