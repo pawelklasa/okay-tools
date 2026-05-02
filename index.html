@@ -30,8 +30,23 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
-    <!-- Plausible analytics — replace data-domain when you have one configured -->
-    <!-- <script defer data-domain="okay.tools" src="https://plausible.io/js/script.js"></script> -->
+    <!-- GoatCounter analytics -->
+    <script>
+      // Count hash routes as distinct paths (HashRouter), strip query/state noise.
+      window.goatcounter = {
+        path: function (p) {
+          var hash = location.hash.replace(/^#/, '').split('?')[0] || '/';
+          return (p.replace(/\/$/, '') || '') + hash;
+        },
+      };
+      // Re-count on client-side navigation.
+      window.addEventListener('hashchange', function () {
+        if (window.goatcounter && window.goatcounter.count) {
+          window.goatcounter.count();
+        }
+      });
+    </script>
+    <script data-goatcounter="https://pav.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 
     <title>okay.tools — colour utilities in OKLCH</title>
   </head>

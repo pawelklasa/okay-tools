@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import {
   buildRamp,
   formatRamp,
+  isInSrgb,
   oklchCss,
   oklchToHex,
   parseColor,
@@ -139,10 +140,14 @@ export function RampGenerator() {
             label="Chroma · C"
             value={anchor.c}
             min={0}
-            max={0.33}
+            max={0.37}
             step={0.005}
             onChange={(v) => setAnchor({ ...anchor, c: v })}
-            display={anchor.c.toFixed(3)}
+            display={
+              isInSrgb(anchor)
+                ? anchor.c.toFixed(3)
+                : `${anchor.c.toFixed(3)} · clipped to sRGB`
+            }
           />
           <Slider
             label="Hue · H"
