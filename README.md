@@ -2,6 +2,8 @@
 
 A small, free suite of OKLCH-native colour utilities for designers and developers — the companion tools for the Medium article ["Color is finally OK"](https://medium.com/design-bootcamp/color-is-finally-ok-82f368f3408c).
 
+**Live:** https://pawelklasa.github.io/okay-tools/
+
 ## Phase 1 tools
 
 - **Ramp Generator** — single anchor → 11-step Tailwind-style ramp (50–950) with even L spacing and chroma taper. Exports to Tailwind v4, shadcn, plain CSS, SCSS, DTCG JSON, hex.
@@ -15,8 +17,8 @@ A small, free suite of OKLCH-native colour utilities for designers and developer
 - Vite + React 19 + TypeScript
 - Tailwind CSS v4 (`@theme` block, dogfooded in OKLCH)
 - [culori](https://culorijs.org/) for the colour math
-- React Router (browser routing, shareable URLs encode palettes in `?s=`)
-- Netlify static hosting (`netlify.toml` included)
+- React Router with `HashRouter` (shareable URLs encode palettes in `?s=`)
+- Hosted on GitHub Pages via GitHub Actions
 
 ## Develop
 
@@ -32,9 +34,9 @@ npm run build
 npm run preview
 ```
 
-## Deploy to Netlify
+## Deploy
 
-The repo includes `netlify.toml` and `public/_redirects` for SPA routing. Either connect the GitHub repo at https://app.netlify.com/start or run `npx netlify deploy --prod` after `npm run build`.
+Pushes to `main` trigger `.github/workflows/deploy.yml`, which builds and publishes to GitHub Pages. Base path is set in `vite.config.ts` (`base: '/okay-tools/'`).
 
 ## Roadmap
 
