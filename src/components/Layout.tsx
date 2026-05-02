@@ -8,11 +8,20 @@ const tools = [
   { to: "/dark-mode", label: "Dark Mode" },
 ];
 
+const soon = [
+  "HSL → OKLCH migrator",
+  "Palette builder",
+  "Colourblind sim",
+  "Data-viz scales",
+  "Gamut visualiser",
+  "Figma plugin",
+];
+
 export function Layout() {
   return (
     <div className="min-h-full grid grid-cols-1 md:grid-cols-[220px_1fr]">
       {/* Sidebar (desktop) */}
-      <aside className="hidden md:flex flex-col bg-[var(--color-bg)] sticky top-0 h-screen border-r border-[var(--color-border)]">
+      <aside className="hidden md:flex flex-col bg-[var(--color-bg)] sticky top-0 h-screen border-r border-[var(--color-border)] overflow-y-auto">
         <div className="px-6 pt-7 pb-8">
           <Link to="/" className="flex items-center gap-2.5">
             <span
@@ -45,6 +54,23 @@ export function Layout() {
             </NavLink>
           ))}
         </nav>
+
+        <div className="px-3 pt-6">
+          <p className="px-3 mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)] mb-1.5">
+            Soon
+          </p>
+          <ul className="flex flex-col">
+            {soon.map((s) => (
+              <li
+                key={s}
+                className="px-3 py-1.5 text-[13px] text-[var(--color-fg-dim)] cursor-default"
+                title="Shipping soon"
+              >
+                {s}
+              </li>
+            ))}
+          </ul>
+        </div>
 
         <div className="mt-auto p-6 text-xs text-[var(--color-fg-dim)] space-y-1">
           <a
