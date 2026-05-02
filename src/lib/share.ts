@@ -8,12 +8,13 @@ export interface SharedRampState {
 
 export function encodeRamp(state: SharedRampState): string {
   const payload = `${state.name}|${state.anchor.l.toFixed(4)}|${state.anchor.c.toFixed(4)}|${state.anchor.h.toFixed(2)}|${state.curve}`;
-  return btoa(payload).replace(/=+$/, "");
+  return btoa(payload).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 export function decodeRamp(hash: string): SharedRampState | null {
   try {
-    const padded = hash + "===".slice((hash.length + 3) % 4);
+    const normalised = hash.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalised + "===".slice((normalised.length + 3) % 4);
     const raw = atob(padded);
     const [name, l, c, h, curve] = raw.split("|");
     if (!name || !l || !c || !h) return null;
