@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>okay.tools — HSL vs OKLCH</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0b0d;
+    --fg: #f5f5f5;
+    --muted: #8a8a90;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: ui-sans-serif, -apple-system, "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-feature-settings: "ss01", "cv11";
+  }
+  .frame {
+    width: 1200px;
+    height: 1200px;
+    padding: 96px 96px 80px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+  }
+  .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .brand {
+    font-size: 22px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .brand b { color: var(--fg); font-weight: 600; }
+  .author {
+    font-size: 18px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  h1 {
+    font-size: 92px;
+    line-height: 0.98;
+    margin: 0;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  h1 span { color: var(--muted); }
+  .row { display: flex; flex-direction: column; gap: 14px; }
+  .label {
+    font-size: 18px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .ramp {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    height: 130px;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .ramp > div { width: 100%; height: 100%; }
+
+  /* HSL ramp: fixed hue 240, fixed sat 70%, evenly spaced lightness.
+     This is what a designer types when they "build a scale in HSL". */
+  .hsl > :nth-child(1)  { background: hsl(240 70% 96%); }
+  .hsl > :nth-child(2)  { background: hsl(240 70% 88%); }
+  .hsl > :nth-child(3)  { background: hsl(240 70% 80%); }
+  .hsl > :nth-child(4)  { background: hsl(240 70% 72%); }
+  .hsl > :nth-child(5)  { background: hsl(240 70% 64%); }
+  .hsl > :nth-child(6)  { background: hsl(240 70% 56%); }
+  .hsl > :nth-child(7)  { background: hsl(240 70% 48%); }
+  .hsl > :nth-child(8)  { background: hsl(240 70% 40%); }
+  .hsl > :nth-child(9)  { background: hsl(240 70% 32%); }
+  .hsl > :nth-child(10) { background: hsl(240 70% 22%); }
+  .hsl > :nth-child(11) { background: hsl(240 70% 12%); }
+
+  /* OKLCH ramp: evenly spaced perceptual L, chroma taper at the ends, hue 256. */
+  .oklch > :nth-child(1)  { background: oklch(0.97 0.02 256); }
+  .oklch > :nth-child(2)  { background: oklch(0.92 0.05 256); }
+  .oklch > :nth-child(3)  { background: oklch(0.85 0.10 256); }
+  .oklch > :nth-child(4)  { background: oklch(0.76 0.15 256); }
+  .oklch > :nth-child(5)  { background: oklch(0.66 0.19 256); }
+  .oklch > :nth-child(6)  { background: oklch(0.56 0.21 256); }
+  .oklch > :nth-child(7)  { background: oklch(0.48 0.20 256); }
+  .oklch > :nth-child(8)  { background: oklch(0.40 0.17 256); }
+  .oklch > :nth-child(9)  { background: oklch(0.33 0.13 256); }
+  .oklch > :nth-child(10) { background: oklch(0.26 0.09 256); }
+  .oklch > :nth-child(11) { background: oklch(0.19 0.05 256); }
+
+  .foot {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 20px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  .foot b { color: var(--fg); font-weight: 500; }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <div class="head">
+      <div class="brand"><b>okay</b>.tools</div>
+      <div class="author">by Pawel Klasa</div>
+    </div>
+
+    <h1>Same blue.<br/><span>Different reality.</span></h1>
+
+    <div class="row">
+      <div class="label">HSL — even lightness, uneven eyes</div>
+      <div class="ramp hsl">
+        <div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label">OKLCH — even lightness, even eyes</div>
+      <div class="ramp oklch">
+        <div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <span>11-step ramp · single anchor · L spaced 5 → 95</span>
+      <b>okay.tools</b>
+    </div>
+  </div>
+</body>
+</html>

@@ -3,16 +3,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 // ---------------------------------------------------------------------------
 // form-hostility — Validation timing playground
 // ---------------------------------------------------------------------------
-// Same form, four validation strategies. Watch a polite tool turn into a bully.
 
 type Strategy = "eager" | "lazy" | "blur" | "smart";
-
 type FieldKey = "email" | "password" | "confirm" | "username" | "card";
-
 type FieldValues = Record<FieldKey, string>;
 type FieldFlags = Record<FieldKey, boolean>;
-
-type FieldError = { field: FieldKey; message: string; tone: "warn" | "info" };
+type FieldError = { field: FieldKey; message: string };
 
 type Metrics = {
   keystrokes: number;
@@ -21,7 +17,7 @@ type Metrics = {
   firstErrorMs: number | null;
   errorsShown: number;
   errorsVanishedWhileTyping: number;
-  punishedForTyping: number; // errors shown before user finished a field
+  punishedForTyping: number;
 };
 
 const STRATEGIES: { id: Strategy; label: string; tagline: string }[] = [
@@ -113,44 +109,43 @@ function validateCard(v: string): string | null {
 
 export function FormPlayground() {
   const [strategy, setStrategy] = useState<Strategy>("eager");
-  const [values, setValues] = useState<FieldValues>({
-    email: "",
-    password: "",
-    confirm: "",
-    username: "",
-    card: "",
-  });
-  const [touched, setTouched] = useState<FieldFlags>({
-    email: false,
-    password: false,
-    confirm: false,
-    username: false,
-    card: false,
-  });
+  const [values, setValues] = useState<FieldValues>(emptyValues());
+  const [touched, setTouched] = useState<FieldFlags>(emptyFlags());
   const [submitted, setSubmitted] = useState(false);
-  const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "ok" | "taken">(
-    "idle"
-  );
+  const [usernameStatus, setUsernameStatus] = useState<
+    "idle" | "checking" | "ok" | "taken"
+  >("idle");
 
-  // Metrics — reset whenever strategy changes
-  const [metrics, setMetrics] = useState<Metrics>(() => emptyMetrics());
+  // Metrics for current strategy
+  const [metrics, setMetrics] = useState<Metrics>(emptyMetrics);
+  // Persisted snapshots per strategy (for comparison chart)
+  const [history, setHistory] = useState<Partial<Record<Strategy, Metrics>>>({});
+
+  // Visual hostility cues
+  const [shakingField, setShakingField] = useState<FieldKey | null>(null);
+  const [flashMetric, setFlashMetric] = useState(false);
+  const [judderField, setJudderField] = useState<FieldKey | null>(null);
+
   const startedAt = useRef<number>(Date.now());
   const lastErrorState = useRef<Set<FieldKey>>(new Set());
+  const prevStrategy = useRef<Strategy>("eager");
+  const demoTimers = useRef<number[]>([]);
+  const [demoRunning, setDemoRunning] = useState(false);
 
-  // Reset interaction state on strategy change (but persist values)
+  // On strategy change: snapshot previous metrics, reset interaction
   useEffect(() => {
-    setTouched({
-      email: false,
-      password: false,
-      confirm: false,
-      username: false,
-      card: false,
-    });
+    if (prevStrategy.current !== strategy) {
+      setHistory((h) => ({ ...h, [prevStrategy.current]: metrics }));
+      prevStrategy.current = strategy;
+    }
+    setTouched(emptyFlags());
     setSubmitted(false);
     setMetrics(emptyMetrics());
     startedAt.current = Date.now();
     lastErrorState.current = new Set();
     setUsernameStatus("idle");
+    cancelDemo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [strategy]);
 
   // Async username check (smart only)
@@ -168,13 +163,14 @@ export function FormPlayground() {
       return;
     }
     setUsernameStatus("checking");
-    const t = setTimeout(() => {
-      setUsernameStatus(TAKEN_USERNAMES.has(values.username.toLowerCase()) ? "taken" : "ok");
+    const t = window.setTimeout(() => {
+      setUsernameStatus(
+        TAKEN_USERNAMES.has(values.username.toLowerCase()) ? "taken" : "ok"
+      );
     }, 350);
-    return () => clearTimeout(t);
+    return () => window.clearTimeout(t);
   }, [values.username, strategy]);
 
-  // Compute which errors should currently display
   const errors = useMemo(
     () => computeVisibleErrors({ strategy, values, touched, submitted, usernameStatus }),
     [strategy, values, touched, submitted, usernameStatus]
@@ -186,7 +182,7 @@ export function FormPlayground() {
     return m;
   }, [errors]);
 
-  // Metrics tracking — observe error transitions
+  // Track error transitions and trigger visceral cues
   useEffect(() => {
     const currentErrFields = new Set(errors.map((e) => e.field));
     const prev = lastErrorState.current;
@@ -194,23 +190,29 @@ export function FormPlayground() {
     let newlyAppeared = 0;
     let vanishedWhileTyping = 0;
     let punished = 0;
+    let punishedField: FieldKey | null = null;
+    let vanishedField: FieldKey | null = null;
 
     for (const f of currentErrFields) {
       if (!prev.has(f)) {
         newlyAppeared++;
-        // "Punished for typing": new error appeared while user is mid-typing
-        // (field has content but isn't blurred and hasn't submitted)
-        if (values[f] && !touched[f] && !submitted) punished++;
+        // Punished = error appeared while user is mid-typing (has content, not blurred, not submitted)
+        if (values[f] && !touched[f] && !submitted) {
+          punished++;
+          punishedField = f;
+        }
       }
     }
     for (const f of prev) {
       if (!currentErrFields.has(f)) {
-        // Vanished — was it because user was typing?
-        if (!submitted) vanishedWhileTyping++;
+        if (!submitted) {
+          vanishedWhileTyping++;
+          vanishedField = f;
+        }
       }
     }
 
-    if (newlyAppeared || vanishedWhileTyping || punished) {
+    if (newlyAppeared || vanishedWhileTyping) {
       setMetrics((m) => ({
         ...m,
         errorsShown: m.errorsShown + newlyAppeared,
@@ -219,6 +221,20 @@ export function FormPlayground() {
         firstErrorMs:
           m.firstErrorMs ?? (newlyAppeared > 0 ? Date.now() - startedAt.current : null),
       }));
+
+      // Visceral cues
+      if (punishedField) {
+        const f = punishedField;
+        setShakingField(f);
+        window.setTimeout(() => setShakingField((s) => (s === f ? null : s)), 380);
+        setFlashMetric(true);
+        window.setTimeout(() => setFlashMetric(false), 800);
+      }
+      if (vanishedField) {
+        const f = vanishedField;
+        setJudderField(f);
+        window.setTimeout(() => setJudderField((j) => (j === f ? null : j)), 340);
+      }
     }
 
     lastErrorState.current = currentErrFields;
@@ -249,6 +265,142 @@ export function FormPlayground() {
     setMetrics((m) => ({ ...m, submitAttempts: m.submitAttempts + 1 }));
   };
 
+  const cancelDemo = () => {
+    demoTimers.current.forEach(window.clearTimeout);
+    demoTimers.current = [];
+    setDemoRunning(false);
+  };
+
+  const resetForm = () => {
+    cancelDemo();
+    setValues(emptyValues());
+    setTouched(emptyFlags());
+    setSubmitted(false);
+    setMetrics(emptyMetrics());
+    startedAt.current = Date.now();
+    lastErrorState.current = new Set();
+    setUsernameStatus("idle");
+  };
+
+  const runDemo = () => {
+    cancelDemo();
+    resetForm();
+    setDemoRunning(true);
+
+    // Realistic typing with typo + correct cycles
+    const script = buildDemoScript();
+    let elapsed = 0;
+    script.forEach((step) => {
+      elapsed += step.delay;
+      const id = window.setTimeout(() => step.run(), elapsed);
+      demoTimers.current.push(id);
+    });
+    // Mark demo as finished after the last step
+    const endId = window.setTimeout(() => setDemoRunning(false), elapsed + 200);
+    demoTimers.current.push(endId);
+  };
+
+  // Demo step actions, captured in a closure that mutates state setters above
+  function buildDemoScript(): { delay: number; run: () => void }[] {
+    const out: { delay: number; run: () => void }[] = [];
+
+    const typeInto = (field: FieldKey, text: string, perChar = 70) => {
+      for (let i = 0; i < text.length; i++) {
+        const ch = text.slice(0, i + 1);
+        out.push({
+          delay: i === 0 ? 220 : perChar,
+          run: () => {
+            setValues((v) => ({ ...v, [field]: field === "card" ? formatCard(ch) : ch }));
+            setMetrics((m) => ({ ...m, keystrokes: m.keystrokes + 1 }));
+          },
+        });
+      }
+    };
+    const backspaceTo = (field: FieldKey, target: string, perChar = 60) => {
+      // current value will be replaced step-by-step toward target by trimming
+      out.push({
+        delay: 280,
+        run: () => {
+          // figure out current and back off
+        },
+      });
+      // Actually simpler: progressively set to target by character
+      for (let i = target.length; i >= 0; i--) {
+        if (i === target.length) continue;
+        const ch = target.slice(0, i);
+        out.push({
+          delay: perChar,
+          run: () => {
+            setValues((v) => ({ ...v, [field]: field === "card" ? formatCard(ch) : ch }));
+            setMetrics((m) => ({ ...m, keystrokes: m.keystrokes + 1 }));
+          },
+        });
+      }
+    };
+    const blur = (field: FieldKey) =>
+      out.push({
+        delay: 260,
+        run: () => {
+          setTouched((t) => ({ ...t, [field]: true }));
+          setMetrics((m) => ({ ...m, blurs: m.blurs + 1 }));
+        },
+      });
+    const submit = () =>
+      out.push({
+        delay: 600,
+        run: () => {
+          setSubmitted(true);
+          setTouched({
+            email: true,
+            password: true,
+            confirm: true,
+            username: true,
+            card: true,
+          });
+          setMetrics((m) => ({ ...m, submitAttempts: m.submitAttempts + 1 }));
+        },
+      });
+
+    // Email — with a typical typo + correct
+    typeInto("email", "paw");
+    typeInto("email", "paw@gmial"); // user notices typo while typing
+    backspaceTo("email", "paw@g"); // backspace
+    typeInto("email", "paw@gmail.com");
+    blur("email");
+
+    // Password — start short, build up
+    typeInto("password", "letme");
+    typeInto("password", "letmein");
+    typeInto("password", "letmein1");
+    blur("password");
+
+    // Confirm — mistype first
+    typeInto("confirm", "letme");
+    typeInto("confirm", "letmeIN1"); // mismatch case
+    backspaceTo("confirm", "let");
+    typeInto("confirm", "letmein1");
+    blur("confirm");
+
+    // Username — try a taken one
+    typeInto("username", "paw");
+    blur("username");
+    backspaceTo("username", "");
+    typeInto("username", "paw_2026");
+    blur("username");
+
+    // Card — type and validate
+    typeInto("card", "4242424242424242", 50);
+    blur("card");
+
+    submit();
+    return out;
+  }
+
+  // Cleanup timers on unmount
+  useEffect(() => () => cancelDemo(), []);
+
+  const punished = metrics.punishedForTyping > 0;
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
@@ -257,20 +409,46 @@ export function FormPlayground() {
           form-hostility · validation timing playground
         </p>
         <h1 className="text-[36px] md:text-[48px] font-semibold tracking-[-0.025em] leading-[1.05] text-[var(--color-fg)]">
-          Same form. Four ways to{" "}
-          <span className="text-[var(--color-fg-dim)]">make it hostile.</span>
+          Same form. Four strategies.{" "}
+          <span className="text-[var(--color-fg-dim)]">One isn't hostile.</span>
         </h1>
         <p className="mt-4 text-[15px] leading-relaxed text-[var(--color-fg-muted)] max-w-2xl">
-          Pick a strategy. Type into the form. The Reveal panel shows what your validation just did
-          to the user — measured, not vibed.
+          Pick a strategy, then type — or hit{" "}
+          <span className="text-[var(--color-fg)]">Demo it for me</span> and watch what each
+          strategy does to the same realistic typing session.
         </p>
       </section>
 
       {/* Strategy picker */}
-      <section className="px-8 lg:px-12 pb-6">
-        <p className="mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)] mb-2">
-          Strategy
-        </p>
+      <section className="px-8 lg:px-12 pb-4">
+        <div className="flex items-baseline justify-between mb-2">
+          <p className="mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)]">
+            Strategy
+          </p>
+          <div className="flex items-center gap-2">
+            {demoRunning ? (
+              <button
+                onClick={cancelDemo}
+                className="mono text-[11px] px-3 py-1.5 rounded-full border border-[var(--color-border-strong)] text-[var(--color-fg-muted)] hover:text-[var(--color-fg)] transition"
+              >
+                Stop demo
+              </button>
+            ) : (
+              <button
+                onClick={runDemo}
+                className="mono text-[11px] px-3 py-1.5 rounded-full bg-[#FFDD00] text-black font-semibold hover:scale-[1.02] active:scale-[0.99] transition"
+              >
+                ▶ Demo it for me
+              </button>
+            )}
+            <button
+              onClick={resetForm}
+              className="mono text-[11px] px-3 py-1.5 rounded-full border border-[var(--color-border)] text-[var(--color-fg-dim)] hover:text-[var(--color-fg)] hover:border-[var(--color-border-strong)] transition"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
           {STRATEGIES.map((s) => (
             <button
@@ -296,19 +474,28 @@ export function FormPlayground() {
       </section>
 
       {/* Form + Reveal */}
-      <section className="px-8 lg:px-12 pb-12 grid lg:grid-cols-[1fr_360px] gap-6 items-start">
+      <section className="px-8 lg:px-12 pb-12 grid lg:grid-cols-[1fr_380px] gap-6 items-start">
         <FormCard
           values={values}
           errors={errorMap}
           strategy={strategy}
           usernameStatus={usernameStatus}
           submitted={submitted}
-          touched={touched}
           onChange={onChange}
           onBlur={onBlur}
           onSubmit={onSubmit}
+          shakingField={shakingField}
+          judderField={judderField}
+          demoRunning={demoRunning}
         />
-        <RevealPanel metrics={metrics} strategy={strategy} errorCount={errors.length} />
+        <RevealPanel
+          metrics={metrics}
+          history={history}
+          currentStrategy={strategy}
+          errorCount={errors.length}
+          punished={punished}
+          flashMetric={flashMetric}
+        />
       </section>
 
       {/* Timing matrix */}
@@ -358,13 +545,26 @@ function FormCard(props: {
   strategy: Strategy;
   usernameStatus: "idle" | "checking" | "ok" | "taken";
   submitted: boolean;
-  touched: FieldFlags;
   onChange: (f: FieldKey) => (v: string) => void;
   onBlur: (f: FieldKey) => () => void;
   onSubmit: (e: React.FormEvent) => void;
+  shakingField: FieldKey | null;
+  judderField: FieldKey | null;
+  demoRunning: boolean;
 }) {
-  const { values, errors, strategy, usernameStatus, submitted, onChange, onBlur, onSubmit } =
-    props;
+  const {
+    values,
+    errors,
+    strategy,
+    usernameStatus,
+    submitted,
+    onChange,
+    onBlur,
+    onSubmit,
+    shakingField,
+    judderField,
+    demoRunning,
+  } = props;
 
   const pwProg = passwordProgress(values.password);
 
@@ -372,7 +572,7 @@ function FormCard(props: {
     <form
       onSubmit={onSubmit}
       noValidate
-      className="rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] p-6 lg:p-7 flex flex-col gap-5"
+      className="rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] p-6 lg:p-7 flex flex-col gap-5 relative"
     >
       <div className="flex items-baseline justify-between">
         <h2 className="text-[18px] font-semibold tracking-tight">Create your account</h2>
@@ -381,10 +581,19 @@ function FormCard(props: {
         </span>
       </div>
 
+      {demoRunning && (
+        <div className="absolute top-3 right-3 mono text-[10px] uppercase tracking-[0.16em] text-[#FFDD00] flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#FFDD00] animate-pulse" />
+          Demo running
+        </div>
+      )}
+
       <Field
         label={FIELD_LABELS.email}
         error={errors.get("email")?.message}
         hint={strategy === "smart" ? "Validates when you leave the field" : undefined}
+        shake={shakingField === "email"}
+        judder={judderField === "email"}
       >
         <input
           type="email"
@@ -401,10 +610,10 @@ function FormCard(props: {
         label={FIELD_LABELS.password}
         error={errors.get("password")?.message}
         hint={
-          strategy === "smart"
-            ? "Live progress meter, no shaming until you submit"
-            : undefined
+          strategy === "smart" ? "Live progress meter, no shaming until you submit" : undefined
         }
+        shake={shakingField === "password"}
+        judder={judderField === "password"}
       >
         <input
           type="password"
@@ -420,7 +629,12 @@ function FormCard(props: {
         )}
       </Field>
 
-      <Field label={FIELD_LABELS.confirm} error={errors.get("confirm")?.message}>
+      <Field
+        label={FIELD_LABELS.confirm}
+        error={errors.get("confirm")?.message}
+        shake={shakingField === "confirm"}
+        judder={judderField === "confirm"}
+      >
         <input
           type="password"
           autoComplete="new-password"
@@ -435,11 +649,9 @@ function FormCard(props: {
       <Field
         label={FIELD_LABELS.username}
         error={errors.get("username")?.message}
-        hint={
-          strategy === "smart"
-            ? `Async availability check (try: admin, root, paw)`
-            : undefined
-        }
+        hint={strategy === "smart" ? "Async availability check (try: admin, paw, root)" : undefined}
+        shake={shakingField === "username"}
+        judder={judderField === "username"}
       >
         <div className="relative">
           <input
@@ -471,6 +683,8 @@ function FormCard(props: {
         label={FIELD_LABELS.card}
         error={errors.get("card")?.message}
         hint={strategy === "smart" ? "Formats while you type, validates Luhn on blur" : undefined}
+        shake={shakingField === "card"}
+        judder={judderField === "card"}
       >
         <input
           type="text"
@@ -509,11 +723,13 @@ function Field(props: {
   label: string;
   error?: string;
   hint?: string;
+  shake?: boolean;
+  judder?: boolean;
   children: React.ReactNode;
 }) {
-  const { label, error, hint, children } = props;
+  const { label, error, hint, shake, judder, children } = props;
   return (
-    <label className="flex flex-col gap-1.5">
+    <label className={`flex flex-col gap-1.5 ${shake ? "shake" : ""}`}>
       <span className="flex items-baseline justify-between">
         <span className="text-[13px] font-medium text-[var(--color-fg)]">{label}</span>
         {hint && !error && (
@@ -523,9 +739,10 @@ function Field(props: {
       {children}
       <span
         aria-live="polite"
+        key={error ? `e:${error}` : `none:${judder ? "j" : "x"}`}
         className={`mono text-[11px] min-h-[14px] ${
           error ? "text-[oklch(0.82_0.16_75)]" : "text-transparent"
-        }`}
+        } ${judder ? "judder" : ""}`}
       >
         {error || "•"}
       </span>
@@ -538,7 +755,7 @@ function inputClass(hasError: boolean) {
     "w-full px-3.5 py-2.5 rounded-[var(--radius-sm)] text-[14px] bg-[var(--color-bg)] outline-none transition",
     "border",
     hasError
-      ? "border-[oklch(0.65_0.18_75)] focus:border-[oklch(0.78_0.16_75)]"
+      ? "border-[oklch(0.65_0.18_75)] focus:border-[oklch(0.78_0.16_75)] shadow-[0_0_0_3px_oklch(0.65_0.18_75/0.18)]"
       : "border-[var(--color-border)] focus:border-[var(--color-border-strong)]",
     "text-[var(--color-fg)] placeholder:text-[var(--color-fg-dim)]",
   ].join(" ");
@@ -584,51 +801,79 @@ function PasswordMeter({
 
 function RevealPanel({
   metrics,
-  strategy,
+  history,
+  currentStrategy,
   errorCount,
+  punished,
+  flashMetric,
 }: {
   metrics: Metrics;
-  strategy: Strategy;
+  history: Partial<Record<Strategy, Metrics>>;
+  currentStrategy: Strategy;
   errorCount: number;
+  punished: boolean;
+  flashMetric: boolean;
 }) {
-  const punished = metrics.punishedForTyping > 0;
+  // Combine current with history for the comparison
+  const merged: Partial<Record<Strategy, Metrics>> = { ...history, [currentStrategy]: metrics };
+  const recorded = STRATEGIES.filter((s) => merged[s.id]);
+  const showCompare = recorded.length >= 2;
+
+  // For comparison, headline metric across strategies
+  const compareMax = Math.max(
+    1,
+    ...recorded.map((s) =>
+      Math.max(merged[s.id]!.punishedForTyping, merged[s.id]!.errorsShown)
+    )
+  );
+
   return (
-    <aside className="rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] p-5 flex flex-col gap-4 lg:sticky lg:top-5">
-      <div>
+    <aside
+      className={`rounded-[var(--radius-lg)] border p-5 flex flex-col gap-4 lg:sticky lg:top-5 transition-colors duration-300 ${
+        punished
+          ? "bg-[oklch(0.22_0.07_75/0.55)] border-[oklch(0.65_0.18_75)]"
+          : "bg-[var(--color-surface)] border-[var(--color-border)]"
+      } ${flashMetric ? "verdict-pulse" : ""}`}
+    >
+      <div className="flex items-center justify-between">
         <p className="mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)]">
           The Reveal
         </p>
-        <p className="text-[13px] text-[var(--color-fg-muted)] mt-1">
-          What this strategy is doing to the user, in numbers.
-        </p>
+        {punished && (
+          <span className="mono text-[9.5px] uppercase tracking-[0.14em] text-[#FFDD00]">
+            ● hostile
+          </span>
+        )}
       </div>
+      <p className="text-[13px] text-[var(--color-fg-muted)] -mt-1">
+        What this strategy is doing to the user, in numbers.
+      </p>
 
-      {/* Headline metric: punished for typing */}
+      {/* Verdict block */}
       <div
-        className={`rounded-[var(--radius)] border p-4 ${
+        className={`rounded-[var(--radius)] border p-4 transition ${
           punished
-            ? "border-[oklch(0.65_0.18_75)] bg-[oklch(0.30_0.08_75/0.18)]"
+            ? "border-[oklch(0.65_0.18_75)] bg-[oklch(0.30_0.10_75/0.30)]"
             : "border-[var(--color-border)] bg-[var(--color-bg)]"
-        }`}
+        } ${flashMetric ? "flash-warn" : ""}`}
       >
         <p className="mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)]">
           Punished for typing
         </p>
         <p
-          className={`mt-1 text-[28px] font-semibold tabular-nums ${
+          className={`mt-1 text-[36px] font-semibold tabular-nums tracking-tight ${
             punished ? "text-[#FFDD00]" : "text-[var(--color-fg)]"
           }`}
         >
           {metrics.punishedForTyping}
         </p>
-        <p className="text-[12px] text-[var(--color-fg-muted)] mt-1">
+        <p className="text-[12px] text-[var(--color-fg-muted)] mt-1 leading-snug">
           {punished
             ? "Errors that appeared mid-typing, before the user could finish."
             : "No mid-typing scolding. Yet."}
         </p>
       </div>
 
-      {/* Stat rows */}
       <Stat label="Time to first error">
         {metrics.firstErrorMs == null ? "—" : `${(metrics.firstErrorMs / 1000).toFixed(2)}s`}
       </Stat>
@@ -638,11 +883,79 @@ function RevealPanel({
       <Stat label="Keystrokes">{metrics.keystrokes}</Stat>
       <Stat label="Submit attempts">{metrics.submitAttempts}</Stat>
 
+      {/* Comparison chart */}
+      {showCompare && (
+        <div className="border-t border-[var(--color-border)] pt-3 mt-1">
+          <p className="mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)] mb-2">
+            Compare this session
+          </p>
+          <div className="flex flex-col gap-2">
+            {STRATEGIES.map((s) => {
+              const m = merged[s.id];
+              if (!m) {
+                return (
+                  <div
+                    key={s.id}
+                    className="flex items-center gap-2 mono text-[10.5px] text-[var(--color-fg-dim)]"
+                  >
+                    <span className="w-14 shrink-0">{s.label}</span>
+                    <span className="opacity-50">— not tried yet</span>
+                  </div>
+                );
+              }
+              const punishedW = (m.punishedForTyping / compareMax) * 100;
+              const errW = (m.errorsShown / compareMax) * 100;
+              const isCurrent = s.id === currentStrategy;
+              return (
+                <div key={s.id} className="flex items-center gap-2">
+                  <span
+                    className={`mono text-[10.5px] w-14 shrink-0 ${
+                      isCurrent ? "text-[var(--color-fg)]" : "text-[var(--color-fg-muted)]"
+                    }`}
+                  >
+                    {s.label}
+                  </span>
+                  <div className="flex-1 flex flex-col gap-0.5">
+                    <div className="h-2 rounded-full bg-[var(--color-surface-2)] overflow-hidden">
+                      <div
+                        className="h-full"
+                        style={{
+                          width: `${Math.max(punishedW, m.punishedForTyping > 0 ? 4 : 0)}%`,
+                          background: m.punishedForTyping > 0 ? "#FFDD00" : "transparent",
+                        }}
+                      />
+                    </div>
+                    <div className="h-1.5 rounded-full bg-[var(--color-surface-2)] overflow-hidden">
+                      <div
+                        className="h-full"
+                        style={{
+                          width: `${Math.max(errW, m.errorsShown > 0 ? 4 : 0)}%`,
+                          background: "oklch(0.65 0.18 75)",
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <span className="mono text-[10px] tabular-nums text-[var(--color-fg-muted)] w-14 text-right">
+                    {m.punishedForTyping}/{m.errorsShown}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mono text-[9.5px] text-[var(--color-fg-dim)] mt-2 leading-relaxed">
+            <span className="inline-block w-2 h-2 rounded-sm bg-[#FFDD00] align-middle mr-1.5" />
+            punished
+            <span className="inline-block w-2 h-2 rounded-sm bg-[oklch(0.65_0.18_75)] align-middle ml-3 mr-1.5" />
+            total errors
+          </p>
+        </div>
+      )}
+
       <p className="text-[12px] text-[var(--color-fg-muted)] border-t border-[var(--color-border)] pt-3 mt-1">
         <span className="mono uppercase tracking-[0.12em] text-[var(--color-fg-dim)] text-[10px] block mb-1">
           Strategy notes
         </span>
-        {STRATEGY_NOTES[strategy]}
+        {STRATEGY_NOTES[currentStrategy]}
       </p>
     </aside>
   );
@@ -659,7 +972,7 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
 
 const STRATEGY_NOTES: Record<Strategy, string> = {
   eager:
-    "Fires on every keystroke. Maximum hostility. Errors appear before the user can finish typing a single field.",
+    "Fires on every keystroke. Errors appear before the user can finish typing a single field.",
   lazy:
     "Holds errors until submit. Calm during typing, but the user discovers all problems at once at the worst possible moment.",
   blur:
@@ -794,7 +1107,7 @@ function TimingMatrix() {
 }
 
 // ---------------------------------------------------------------------------
-// Hostility audit checklist
+// Hostility audit
 // ---------------------------------------------------------------------------
 
 function ChecklistAudit() {
@@ -848,6 +1161,12 @@ function ChecklistAudit() {
 // Helpers
 // ---------------------------------------------------------------------------
 
+function emptyValues(): FieldValues {
+  return { email: "", password: "", confirm: "", username: "", card: "" };
+}
+function emptyFlags(): FieldFlags {
+  return { email: false, password: false, confirm: false, username: false, card: false };
+}
 function emptyMetrics(): Metrics {
   return {
     keystrokes: 0,
@@ -869,23 +1188,20 @@ function computeVisibleErrors(args: {
 }): FieldError[] {
   const { strategy, values, touched, submitted, usernameStatus } = args;
   const out: FieldError[] = [];
-
   const push = (field: FieldKey, message: string | null) => {
-    if (message) out.push({ field, message, tone: "warn" });
+    if (message) out.push({ field, message });
   };
 
-  // Per-field decisions
   // EMAIL
-  if (shouldShow("email", { strategy, value: values.email, touched: touched.email, submitted })) {
+  if (shouldShow({ strategy, value: values.email, touched: touched.email, submitted })) {
     push("email", validateEmail(values.email));
   }
 
   // PASSWORD
   if (strategy === "smart") {
-    // Only show error after submit; meanwhile, the meter handles feedback.
     if (submitted) push("password", validatePassword(values.password));
   } else if (
-    shouldShow("password", {
+    shouldShow({
       strategy,
       value: values.password,
       touched: touched.password,
@@ -897,7 +1213,6 @@ function computeVisibleErrors(args: {
 
   // CONFIRM
   if (strategy === "smart") {
-    // Wait until both have content and password was blurred (or submitted).
     if (
       submitted ||
       (values.confirm.length > 0 &&
@@ -907,7 +1222,7 @@ function computeVisibleErrors(args: {
       push("confirm", validateConfirm(values.confirm, values.password));
     }
   } else if (
-    shouldShow("confirm", {
+    shouldShow({
       strategy,
       value: values.confirm,
       touched: touched.confirm,
@@ -929,7 +1244,7 @@ function computeVisibleErrors(args: {
       else if (usernameStatus === "taken") push("username", "Username taken");
     }
   } else if (
-    shouldShow("username", {
+    shouldShow({
       strategy,
       value: values.username,
       touched: touched.username,
@@ -943,7 +1258,7 @@ function computeVisibleErrors(args: {
   if (strategy === "smart") {
     if (submitted || touched.card) push("card", validateCard(values.card));
   } else if (
-    shouldShow("card", { strategy, value: values.card, touched: touched.card, submitted })
+    shouldShow({ strategy, value: values.card, touched: touched.card, submitted })
   ) {
     push("card", validateCard(values.card));
   }
@@ -951,10 +1266,12 @@ function computeVisibleErrors(args: {
   return out;
 }
 
-function shouldShow(
-  _field: FieldKey,
-  args: { strategy: Strategy; value: string; touched: boolean; submitted: boolean }
-) {
+function shouldShow(args: {
+  strategy: Strategy;
+  value: string;
+  touched: boolean;
+  submitted: boolean;
+}) {
   const { strategy, value, touched, submitted } = args;
   if (submitted) return true;
   switch (strategy) {
@@ -965,6 +1282,6 @@ function shouldShow(
     case "blur":
       return touched;
     case "smart":
-      return touched; // overridden per-field above
+      return touched;
   }
 }
