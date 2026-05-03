@@ -166,12 +166,10 @@ export function FormPlayground() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [strategy]);
 
-  // Async username check (smart only)
+  // Async username availability check. Runs for ALL strategies so the
+  // comparison is fair (same input, same data). What differs is *when* each
+  // strategy surfaces the result — see computeVisibleErrors.
   useEffect(() => {
-    if (strategy !== "smart") {
-      setUsernameStatus("idle");
-      return;
-    }
     if (!values.username) {
       setUsernameStatus("idle");
       return;
@@ -187,7 +185,7 @@ export function FormPlayground() {
       );
     }, 350);
     return () => window.clearTimeout(t);
-  }, [values.username, strategy]);
+  }, [values.username]);
 
   const errors = useMemo(
     () => computeVisibleErrors({ strategy, values, touched, submitted, usernameStatus }),
@@ -439,13 +437,14 @@ export function FormPlayground() {
     }
 
     // Username
-    typeInto("username", "paw");
     if (mode === "messy") {
       // User picks a taken name and moves on
+      typeInto("username", "paw");
       blur("username");
     } else {
-      blur("username");
-      backspaceTo("username", "");
+      // Clean: type a valid available name in one go. No detours that would
+      // leave a touched field in an invalid state and create a phantom
+      // "errors shown" event for blur/smart strategies.
       typeInto("username", "paw_2026");
       blur("username");
     }
@@ -1063,8 +1062,10 @@ function RevealPanel({
             wall at submit
           </p>
           <p className="text-[11px] text-[var(--color-fg-muted)] mt-2 leading-snug">
-            Two failure modes. Eager punishes during. Lazy ambushes at the end. Smart picks
-            the right moment per field.
+            Two failure modes, same input across all four. Eager punishes during.
+            Lazy ambushes at the end. On-blur lands errors as you tab through. Smart
+            picks the right moment per field — and its inline status pill is a UI
+            affordance the others simply don't have.
           </p>
         </div>
       )}
@@ -1350,24 +1351,37 @@ function computeVisibleErrors(args: {
   }
 
   // USERNAME
-  if (strategy === "smart") {
-    // Smart never validates mid-typing. The "available / taken" pill next to
-    // the field is shown as inline status, not as a blocking error.
-    if (submitted || touched.username) {
-      const synthetic = validateUsername(values.username);
-      if (synthetic) push("username", synthetic);
-      else if (usernameStatus === "taken") push("username", "Username taken");
-    }
-  } else if (
-    shouldShow({
+  // Each strategy gets the same async availability data; they differ in when
+  // they surface the "Username taken" result.
+  const formatErr = validateUsername(values.username);
+  const showFormat = (() => {
+    if (strategy === "smart") return submitted || touched.username;
+    return shouldShow({
       strategy,
       value: values.username,
       touched: touched.username,
       submitted,
-    })
-  ) {
-    push("username", validateUsername(values.username));
-  }
+    });
+  })();
+  const showTaken = (() => {
+    // "Taken" is meaningful only once the format is valid.
+    if (formatErr || usernameStatus !== "taken") return false;
+    switch (strategy) {
+      case "eager":
+        // Surfaces as soon as the async check returns, mid-typing.
+        return values.username.length > 0;
+      case "lazy":
+        // Hidden until submit — the wall.
+        return submitted;
+      case "blur":
+        // After the user leaves the field.
+        return touched.username || submitted;
+      case "smart":
+        return touched.username || submitted;
+    }
+  })();
+  if (showFormat && formatErr) push("username", formatErr);
+  else if (showTaken) push("username", "Username taken");
 
   // CARD
   if (strategy === "smart") {
