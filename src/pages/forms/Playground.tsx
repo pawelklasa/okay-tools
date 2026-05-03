@@ -1238,12 +1238,10 @@ function computeVisibleErrors(args: {
 
   // CONFIRM
   if (strategy === "smart") {
-    if (
-      submitted ||
-      (values.confirm.length > 0 &&
-        values.password.length > 0 &&
-        (touched.password || touched.confirm))
-    ) {
+    // Only validate confirm once the user has finished typing it (blur) or
+    // submitted. Mid-typing comparison would punish every keystroke until
+    // the user happens to match the password.
+    if (submitted || touched.confirm) {
       push("confirm", validateConfirm(values.confirm, values.password));
     }
   } else if (
@@ -1259,11 +1257,9 @@ function computeVisibleErrors(args: {
 
   // USERNAME
   if (strategy === "smart") {
-    if (submitted) {
-      const synthetic = validateUsername(values.username);
-      if (synthetic) push("username", synthetic);
-      else if (usernameStatus === "taken") push("username", "Username taken");
-    } else if (values.username.length > 0) {
+    // Smart never validates mid-typing. The "available / taken" pill next to
+    // the field is shown as inline status, not as a blocking error.
+    if (submitted || touched.username) {
       const synthetic = validateUsername(values.username);
       if (synthetic) push("username", synthetic);
       else if (usernameStatus === "taken") push("username", "Username taken");
