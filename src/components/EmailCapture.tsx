@@ -1,4 +1,4 @@
-import { useState, useId, useRef, useEffect } from "react";
+import { useState, useId } from "react";
 import { Link } from "react-router-dom";
 
 // Buttondown account username (https://buttondown.com/<username>).
@@ -25,21 +25,14 @@ export function EmailCapture({
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const inputId = useId();
   const iframeName = "bd_" + useId().replace(/[^a-zA-Z0-9]/g, "");
-  const formRef = useRef<HTMLFormElement>(null);
-  const iframeLoaded = useRef(false);
 
   const valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 
   // Submission strategy: native <form action method target=hidden-iframe>
   // POST. We only intercept submit to validate; if valid, we let the
-  // browser submit normally to the iframe, then flip UI state. We also
-  // listen for the iframe's load event as the real success signal
-  // (fires once the response — even an X-Frame-Options blocked one —
-  // is delivered).
-  useEffect(() => {
-    iframeLoaded.current = false;
-  }, []);
-
+  // browser submit normally to the iframe and flip UI to success right
+  // away — the request is already in flight by then, and waiting on the
+  // iframe load adds ~2s of unnecessary perceived latency.
   const onSubmit = (e: React.FormEvent) => {
     setErrMsg(null);
 
@@ -57,16 +50,8 @@ export function EmailCapture({
     }
 
     // Don't preventDefault — let the browser submit to the iframe.
-    setState("submitting");
-  };
-
-  const onIframeLoad = () => {
-    // First load is the iframe mounting empty; subsequent loads are
-    // real responses from Buttondown.
-    if (!iframeLoaded.current) {
-      iframeLoaded.current = true;
-      return;
-    }
+    // Optimistic success: the POST has been dispatched by the time React
+    // returns from this handler.
     setState("success");
   };
 
@@ -86,7 +71,6 @@ export function EmailCapture({
   if (hideHeading) {
     return (
       <form
-        ref={formRef}
         onSubmit={onSubmit}
         action={ENDPOINT}
         method="post"
@@ -164,7 +148,6 @@ export function EmailCapture({
           title="subscribe"
           aria-hidden="true"
           tabIndex={-1}
-          onLoad={onIframeLoad}
           style={{ display: "none" }}
         />
       </form>
@@ -173,7 +156,6 @@ export function EmailCapture({
 
   return (
     <form
-      ref={formRef}
       onSubmit={onSubmit}
       action={ENDPOINT}
       method="post"
@@ -252,7 +234,6 @@ export function EmailCapture({
         title="subscribe"
         aria-hidden="true"
         tabIndex={-1}
-        onLoad={onIframeLoad}
         style={{ display: "none" }}
       />
     </form>
