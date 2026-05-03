@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>okay.tools — Your form is hostile</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0b0d;
+    --fg: #f5f5f5;
+    --muted: #8a8a90;
+    --yellow: #FFDD00;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: ui-sans-serif, -apple-system, "Inter", "Helvetica Neue", Arial, sans-serif;
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono {
+    font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  /* 1200x630 — the standard og:image / Medium crop.
+     Layout note: Medium's feed thumbnails crop to a centered square
+     (~630x630 of this 1200x630 frame, x=285..915). The headline must
+     stay inside that safe zone or "Your" gets sliced off in feeds.
+     We center the hook horizontally and use a wide glow to fill the
+     side bands. */
+  .frame {
+    width: 1200px;
+    height: 630px;
+    padding: 56px 80px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Soft yellow glow centered behind the headline so the word HOSTILE
+     feels hot regardless of crop. */
+  .frame::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 900px;
+    height: 600px;
+    background: radial-gradient(closest-side, rgba(255, 221, 0, 0.12), transparent 70%);
+    pointer-events: none;
+  }
+
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 1;
+    width: 100%;
+  }
+  .logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: conic-gradient(
+      from 0deg,
+      oklch(0.72 0.18 30),
+      oklch(0.72 0.18 110),
+      oklch(0.72 0.18 200),
+      oklch(0.72 0.18 290),
+      oklch(0.72 0.18 30)
+    );
+  }
+  .brand {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .brand .dim { color: var(--muted); font-weight: 500; }
+  .tag {
+    margin-left: auto;
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* The hook. Centered horizontally so it survives Medium's square
+     crop. "Your form" / "is hostile." stacked, both inside the
+     central ~630px square. */
+  .hook {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 {
+    margin: 0;
+    font-size: 152px;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    font-weight: 700;
+    color: var(--fg);
+  }
+  h1 .hostile {
+    position: relative;
+    display: inline-block;
+    color: var(--yellow);
+  }
+  /* Hand-drawn-ish underline using a thick yellow bar that sits
+     slightly tilted under the word HOSTILE. */
+  h1 .hostile::after {
+    content: "";
+    position: absolute;
+    left: -2%;
+    right: -2%;
+    bottom: 6px;
+    height: 14px;
+    background: var(--yellow);
+    transform: skewX(-8deg);
+    border-radius: 2px;
+    box-shadow: 0 0 24px rgba(255, 221, 0, 0.55);
+  }
+  h1 .period { color: var(--yellow); }
+
+  .sub {
+    margin-top: 28px;
+    font-size: 20px;
+    line-height: 1.4;
+    color: var(--muted);
+    max-width: 620px;
+    text-align: center;
+  }
+  .sub b { color: var(--fg); font-weight: 500; }
+
+  .foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    z-index: 1;
+    width: 100%;
+  }
+  .author {
+    font-size: 16px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .url {
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+  .url b { color: var(--fg); font-weight: 500; }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <div class="head">
+      <span class="logo" aria-hidden="true"></span>
+      <span class="brand">okay<span class="dim">.tools</span></span>
+      <span class="tag mono">form-hostility</span>
+    </div>
+
+    <div class="hook">
+      <h1>
+        Your form<br/>
+        is <span class="hostile">hostile</span><span class="period">.</span>
+      </h1>
+      <p class="sub">
+        A validation timing playground.
+        <b>Eager</b>, <b>Lazy</b>, <b>On-blur</b>, <b>Smart</b> — same form, four different feels.
+      </p>
+    </div>
+
+    <div class="foot">
+      <span class="author mono">by Pawel Klasa</span>
+      <span class="url mono"><b>okay.tools</b>/forms</span>
+    </div>
+  </div>
+</body>
+</html>
