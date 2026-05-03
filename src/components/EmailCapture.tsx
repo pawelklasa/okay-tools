@@ -1,4 +1,4 @@
-import { useState, useId, useRef } from "react";
+import { useState, useId, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 // Buttondown account username (https://buttondown.com/<username>).
@@ -26,35 +26,48 @@ export function EmailCapture({
   const inputId = useId();
   const iframeName = "bd_" + useId().replace(/[^a-zA-Z0-9]/g, "");
   const formRef = useRef<HTMLFormElement>(null);
+  const iframeLoaded = useRef(false);
 
   const valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 
-  // Submission strategy: a real <form action="...embed-subscribe/..."> POST
-  // targeting a hidden iframe. Buttondown's embed endpoint expects a normal
-  // form submission (it returns HTML), and a regular form POST avoids the
-  // CORS / opaque-body issues that fetch + no-cors had. The page doesn't
-  // navigate because target points at the iframe.
+  // Submission strategy: native <form action method target=hidden-iframe>
+  // POST. We only intercept submit to validate; if valid, we let the
+  // browser submit normally to the iframe, then flip UI state. We also
+  // listen for the iframe's load event as the real success signal
+  // (fires once the response — even an X-Frame-Options blocked one —
+  // is delivered).
+  useEffect(() => {
+    iframeLoaded.current = false;
+  }, []);
+
   const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
     setErrMsg(null);
 
     if (honeypot) {
+      e.preventDefault();
       setState("success");
       return;
     }
 
     if (!valid) {
+      e.preventDefault();
       setErrMsg("That doesn't look like an email.");
       setState("error");
       return;
     }
 
+    // Don't preventDefault — let the browser submit to the iframe.
     setState("submitting");
-    formRef.current?.submit();
-    // We can't read the cross-origin iframe response, so optimistically
-    // confirm after a short tick. Duplicates re-trigger confirmation on
-    // Buttondown's end.
-    setTimeout(() => setState("success"), 600);
+  };
+
+  const onIframeLoad = () => {
+    // First load is the iframe mounting empty; subsequent loads are
+    // real responses from Buttondown.
+    if (!iframeLoaded.current) {
+      iframeLoaded.current = true;
+      return;
+    }
+    setState("success");
   };
 
   if (state === "success") {
@@ -151,6 +164,7 @@ export function EmailCapture({
           title="subscribe"
           aria-hidden="true"
           tabIndex={-1}
+          onLoad={onIframeLoad}
           style={{ display: "none" }}
         />
       </form>
@@ -238,6 +252,7 @@ export function EmailCapture({
         title="subscribe"
         aria-hidden="true"
         tabIndex={-1}
+        onLoad={onIframeLoad}
         style={{ display: "none" }}
       />
     </form>
