@@ -1087,14 +1087,14 @@ function TimingMatrix() {
                     }`}
                     title={r.why[c]}
                   >
-                    <span className="flex items-start gap-1.5">
-                      {picked ? (
-                        <span className="mono text-[#FFDD00] mt-0.5">★</span>
-                      ) : (
-                        <span className="mono text-[var(--color-fg-dim)] mt-0.5">·</span>
-                      )}
+                    {picked ? (
+                      <span className="flex items-start gap-1.5">
+                        <span className="mono text-[#FFDD00] mt-0.5 shrink-0">★</span>
+                        <span className="text-[12px] leading-snug">{r.why[c]}</span>
+                      </span>
+                    ) : (
                       <span className="text-[12px] leading-snug">{r.why[c]}</span>
-                    </span>
+                    )}
                   </td>
                 );
               })}
