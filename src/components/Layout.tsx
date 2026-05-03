@@ -2,15 +2,14 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 
 const tools = [
   { to: "/hsl-to-oklch", label: "HSL → OKLCH" },
+  { to: "/palette", label: "Palette Generator" },
   { to: "/ramp", label: "Ramp" },
   { to: "/gradient", label: "Gradient" },
   { to: "/hsl-lies", label: "HSL Lies" },
   { to: "/contrast", label: "Contrast" },
-  { to: "/dark-mode", label: "Theme Builder" },
 ];
 
 const soon = [
-  "Palette builder",
   "Figma plugin",
 ];
 

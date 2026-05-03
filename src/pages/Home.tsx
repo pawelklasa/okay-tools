@@ -188,6 +188,7 @@ function ToolGrid() {
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <HslLiesCard />
         <MigratorCard />
+        <PaletteCard />
         <RampCard />
         <ThemeBuilderCard />
         <ContrastCard />
@@ -341,6 +342,36 @@ function RampCard() {
             <span className="mono text-[9.5px] text-[var(--color-fg-dim)]">
               11 stops · even ΔL
             </span>
+          </div>
+        </div>
+      }
+    />
+  );
+}
+
+function PaletteCard() {
+  const hues = [245, 265, 285, 305, 325];
+  return (
+    <CardShell
+      to="/palette"
+      title="Palette Generator"
+      blurb="From one colour to a system: primary, harmony, neutrals, and semantics."
+      preview={
+        <div className="px-4 py-4 flex flex-col gap-3 justify-center h-full">
+          <div className="grid grid-cols-5 h-12 rounded overflow-hidden border border-[var(--color-border)]">
+            {hues.map((h) => (
+              <div key={h} style={{ background: `oklch(0.68 0.17 ${h})` }} />
+            ))}
+          </div>
+          <div className="grid grid-cols-5 gap-1">
+            {["analog", "split", "triad", "tetrad", "mono"].map((m) => (
+              <span
+                key={m}
+                className="mono text-[9px] text-center py-1 rounded bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-fg-dim)]"
+              >
+                {m}
+              </span>
+            ))}
           </div>
         </div>
       }
