@@ -23,8 +23,8 @@ export function BrandHome() {
           A small studio of tools that make the invisible obvious
         </p>
         <h1 className="text-[44px] md:text-[64px] lg:text-[76px] font-semibold tracking-[-0.035em] leading-[1.02] text-[var(--color-fg)]">
-          Pick your{" "}
-          <span className="text-[var(--color-fg-dim)]">poison.</span>
+          <span className="text-[var(--color-fg-dim)]">Pick your</span>{" "}
+          poison.
         </h1>
         <p className="mt-5 text-[16px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl">
           Two apps. Both reveal something your design system pretends isn't broken.
@@ -137,7 +137,7 @@ function FormsAppCard() {
   return (
     <Link
       to="/forms"
-      className="group rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden hover:border-[var(--color-border-strong)] transition flex flex-col"
+      className="group relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden hover:border-[#FFDD00]/60 transition flex flex-col shadow-[0_0_0_0_rgba(255,221,0,0)] hover:shadow-[0_0_40px_-12px_rgba(255,221,0,0.35)]"
     >
       {/* Preview: tiny mock form with eager error vs calm field */}
       <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-3">
@@ -145,9 +145,11 @@ function FormsAppCard() {
           <p className="mono text-[9.5px] uppercase tracking-wider text-[var(--color-fg-dim)]">
             Eager — punishes typing
           </p>
-          <div className="rounded border border-[oklch(0.65_0.18_75)] bg-[var(--color-surface)] px-3 py-2 flex items-center justify-between">
+          <div className="rounded border border-[oklch(0.65_0.18_75)] bg-[var(--color-surface)] px-3 py-2 flex items-center justify-between shadow-[0_0_0_3px_oklch(0.65_0.18_75/0.18)]">
             <span className="mono text-[11px] text-[var(--color-fg)]">paw</span>
-            <span className="mono text-[9.5px] text-[oklch(0.78_0.16_75)]">not a valid email</span>
+            <span className="mono text-[10px] font-semibold text-[#FFDD00]">
+              ⚠ not a valid email
+            </span>
           </div>
         </div>
         <div className="flex flex-col gap-1.5">
@@ -156,7 +158,7 @@ function FormsAppCard() {
           </p>
           <div className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 flex items-center justify-between">
             <span className="mono text-[11px] text-[var(--color-fg)]">paw</span>
-            <span className="mono text-[9.5px] text-[var(--color-fg-dim)]">—</span>
+            <span className="mono text-[10px] text-[oklch(0.78_0.16_155)]">✓ still typing…</span>
           </div>
         </div>
       </div>
