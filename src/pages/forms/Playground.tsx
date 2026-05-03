@@ -128,17 +128,28 @@ export function FormPlayground() {
 
   const startedAt = useRef<number>(Date.now());
   const lastErrorState = useRef<Set<FieldKey>>(new Set());
-  const prevStrategy = useRef<Strategy>("eager");
   const skipNextDiff = useRef(false);
   const demoTimers = useRef<number[]>([]);
   const [demoRunning, setDemoRunning] = useState(false);
 
-  // On strategy change: snapshot previous metrics, reset interaction
+  // Live ref that always holds the latest committed metrics. Used for an
+  // accurate, race-free snapshot at the exact moment of strategy switch.
+  const liveMetricsRef = useRef<Metrics>(metrics);
+  liveMetricsRef.current = metrics;
+
+  // Switch strategy AND snapshot the outgoing strategy's metrics in one go.
+  // Doing this in the click handler (rather than a useEffect) avoids the
+  // closure-stale-metrics problem that was leaking previous strategies'
+  // numbers into the new strategy's history slot.
+  const switchStrategy = (next: Strategy) => {
+    if (next === strategy) return;
+    setHistory((h) => ({ ...h, [strategy]: liveMetricsRef.current }));
+    setStrategy(next);
+  };
+
+  // On strategy change: reset interaction state only. History was already
+  // snapshotted by switchStrategy above.
   useEffect(() => {
-    if (prevStrategy.current !== strategy) {
-      setHistory((h) => ({ ...h, [prevStrategy.current]: metrics }));
-      prevStrategy.current = strategy;
-    }
     setTouched(emptyFlags());
     setSubmitted(false);
     setMetrics(emptyMetrics());
@@ -467,7 +478,7 @@ export function FormPlayground() {
           {STRATEGIES.map((s) => (
             <button
               key={s.id}
-              onClick={() => setStrategy(s.id)}
+              onClick={() => switchStrategy(s.id)}
               className={`text-left rounded-[var(--radius)] p-4 border transition ${
                 strategy === s.id
                   ? "bg-[var(--color-fg)] text-[var(--color-bg)] border-[var(--color-fg)]"
