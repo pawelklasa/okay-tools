@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { EmailCapture } from "../../components/EmailCapture";
 
 // ---------------------------------------------------------------------------
 // form-hostility — Validation timing playground
@@ -597,6 +598,17 @@ export function FormPlayground() {
           Run your real form against these. One yes is bad. Two is hostile.
         </p>
         <ChecklistAudit />
+      </section>
+
+      {/* Email capture */}
+      <section className="px-8 lg:px-12 pb-16 max-w-xl">
+        <p className="mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)] mb-3">
+          Stay posted
+        </p>
+        <EmailCapture
+          source="forms-playground"
+          prompt="Liked this? I'll email you when the next one ships."
+        />
       </section>
 
       <footer className="mt-auto px-8 lg:px-12 py-8 text-xs text-[var(--color-fg-dim)] border-t border-[var(--color-border)] flex flex-wrap gap-x-6 gap-y-2 items-center justify-between">

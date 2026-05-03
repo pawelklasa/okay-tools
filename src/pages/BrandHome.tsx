@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { EmailCapture } from "../components/EmailCapture";
 
 export function BrandHome() {
   return (
@@ -35,6 +36,17 @@ export function BrandHome() {
       <section className="px-8 lg:px-16 pb-20 grid md:grid-cols-2 gap-5">
         <ColorAppCard />
         <FormsAppCard />
+      </section>
+
+      {/* Email capture */}
+      <section className="px-8 lg:px-16 pb-20 max-w-xl">
+        <p className="mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)] mb-3">
+          Stay posted
+        </p>
+        <EmailCapture
+          source="landing"
+          prompt="I'll email you when the next tool ships. Two emails a year. Maybe three."
+        />
       </section>
 
       {/* Footer */}

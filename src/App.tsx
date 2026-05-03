@@ -12,6 +12,7 @@ import { PaletteGenerator } from "./pages/PaletteGenerator";
 import { ContrastFinder } from "./pages/ContrastFinder";
 import { DarkModeInverter } from "./pages/DarkModeInverter";
 import { FormPlayground } from "./pages/forms/Playground";
+import { Privacy } from "./pages/Privacy";
 
 export default function App() {
   return (
@@ -38,6 +39,9 @@ export default function App() {
         <Route path="forms" element={<FormsLayout />}>
           <Route index element={<FormPlayground />} />
         </Route>
+
+        {/* Privacy */}
+        <Route path="privacy" element={<Privacy />} />
 
         {/* Legacy redirects — preserve existing URLs */}
         <Route path="ramp" element={<Navigate to="/color/ramp" replace />} />
