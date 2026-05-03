@@ -129,6 +129,7 @@ export function FormPlayground() {
   const startedAt = useRef<number>(Date.now());
   const lastErrorState = useRef<Set<FieldKey>>(new Set());
   const prevStrategy = useRef<Strategy>("eager");
+  const skipNextDiff = useRef(false);
   const demoTimers = useRef<number[]>([]);
   const [demoRunning, setDemoRunning] = useState(false);
 
@@ -143,6 +144,10 @@ export function FormPlayground() {
     setMetrics(emptyMetrics());
     startedAt.current = Date.now();
     lastErrorState.current = new Set();
+    // The next render still carries closure values from the previous strategy
+    // (touched/submitted/values haven't applied yet). Skip one diff cycle so
+    // those leftover errors don't get attributed to the new strategy.
+    skipNextDiff.current = true;
     setUsernameStatus("idle");
     cancelDemo();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -185,6 +190,15 @@ export function FormPlayground() {
   // Track error transitions and trigger visceral cues
   useEffect(() => {
     const currentErrFields = new Set(errors.map((e) => e.field));
+
+    if (skipNextDiff.current) {
+      // Strategy just changed; absorb the in-between render without crediting
+      // any of its errors to the new strategy.
+      lastErrorState.current = currentErrFields;
+      skipNextDiff.current = false;
+      return;
+    }
+
     const prev = lastErrorState.current;
 
     let newlyAppeared = 0;
