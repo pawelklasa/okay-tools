@@ -38,15 +38,30 @@ export function BrandHome() {
         <FormsAppCard />
       </section>
 
-      {/* Email capture */}
-      <section className="px-8 lg:px-16 pb-20 max-w-xl">
-        <p className="mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)] mb-3">
-          Stay posted
-        </p>
-        <EmailCapture
-          source="landing"
-          prompt="I'll email you when the next tool ships. Two emails a year. Maybe three."
-        />
+      {/* Email capture — full-bleed band so it can't be missed */}
+      <section className="px-8 lg:px-16 pb-20">
+        <div
+          className="rounded-[var(--radius-lg)] border border-[#FFDD00]/40 p-8 lg:p-12 grid md:grid-cols-[1fr_auto] gap-8 items-center"
+          style={{
+            background:
+              "linear-gradient(180deg, oklch(0.22 0.10 95 / 0.18), oklch(0.18 0.05 95 / 0.10))",
+          }}
+        >
+          <div className="max-w-xl">
+            <p className="mono text-[10px] uppercase tracking-[0.18em] text-[#FFDD00] mb-3">
+              Get the next one
+            </p>
+            <h2 className="text-[28px] md:text-[34px] font-semibold tracking-[-0.02em] leading-[1.1] text-[var(--color-fg)] mb-3">
+              I'll email you when the next tool ships.
+            </h2>
+            <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)]">
+              Two emails a year. Maybe three. No newsletter, no marketing.
+            </p>
+          </div>
+          <div className="md:min-w-[360px]">
+            <EmailCapture source="landing" prompt="" hideHeading />
+          </div>
+        </div>
       </section>
 
       {/* Footer */}

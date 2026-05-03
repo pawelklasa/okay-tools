@@ -577,6 +577,32 @@ export function FormPlayground() {
         />
       </section>
 
+      {/* Email capture — right after the reveal, where attention peaks */}
+      <section className="px-8 lg:px-12 pb-14">
+        <div
+          className="rounded-[var(--radius-lg)] border border-[#FFDD00]/40 p-6 lg:p-8 grid md:grid-cols-[1fr_auto] gap-6 items-center"
+          style={{
+            background:
+              "linear-gradient(180deg, oklch(0.22 0.10 95 / 0.18), oklch(0.18 0.05 95 / 0.10))",
+          }}
+        >
+          <div className="max-w-xl">
+            <p className="mono text-[10px] uppercase tracking-[0.18em] text-[#FFDD00] mb-2">
+              Liked this?
+            </p>
+            <h2 className="text-[22px] md:text-[26px] font-semibold tracking-[-0.015em] leading-[1.15] text-[var(--color-fg)] mb-2">
+              I'll email you when the next one ships.
+            </h2>
+            <p className="text-[13px] leading-relaxed text-[var(--color-fg-muted)]">
+              Two emails a year. Maybe three.
+            </p>
+          </div>
+          <div className="md:min-w-[340px]">
+            <EmailCapture source="forms-playground" prompt="" hideHeading />
+          </div>
+        </div>
+      </section>
+
       {/* Timing matrix */}
       <section className="px-8 lg:px-12 pb-14">
         <h2 className="mono text-[11px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)] mb-3">
@@ -598,17 +624,6 @@ export function FormPlayground() {
           Run your real form against these. One yes is bad. Two is hostile.
         </p>
         <ChecklistAudit />
-      </section>
-
-      {/* Email capture */}
-      <section className="px-8 lg:px-12 pb-16 max-w-xl">
-        <p className="mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)] mb-3">
-          Stay posted
-        </p>
-        <EmailCapture
-          source="forms-playground"
-          prompt="Liked this? I'll email you when the next one ships."
-        />
       </section>
 
       <footer className="mt-auto px-8 lg:px-12 py-8 text-xs text-[var(--color-fg-dim)] border-t border-[var(--color-border)] flex flex-wrap gap-x-6 gap-y-2 items-center justify-between">
