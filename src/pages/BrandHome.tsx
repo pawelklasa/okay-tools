@@ -55,7 +55,7 @@ export function BrandHome() {
               I'll email you when the next tool ships.
             </h2>
             <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)]">
-              Two emails a year. Maybe three. No newsletter, no marketing.
+              One email per tool. Roughly every couple of months. No newsletter, no marketing.
             </p>
           </div>
           <div className="md:min-w-[360px]">

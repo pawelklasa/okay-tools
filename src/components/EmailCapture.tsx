@@ -1,4 +1,4 @@
-import { useState, useId } from "react";
+import { useState, useId, useRef } from "react";
 import { Link } from "react-router-dom";
 
 // Buttondown account username (https://buttondown.com/<username>).
@@ -9,7 +9,7 @@ type State = "idle" | "submitting" | "success" | "error";
 
 export function EmailCapture({
   prompt,
-  source,
+  source: _source,
   className = "",
   hideHeading = false,
 }: {
@@ -24,14 +24,20 @@ export function EmailCapture({
   const [state, setState] = useState<State>("idle");
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const inputId = useId();
+  const iframeName = "bd_" + useId().replace(/[^a-zA-Z0-9]/g, "");
+  const formRef = useRef<HTMLFormElement>(null);
 
   const valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 
-  const onSubmit = async (e: React.FormEvent) => {
+  // Submission strategy: a real <form action="...embed-subscribe/..."> POST
+  // targeting a hidden iframe. Buttondown's embed endpoint expects a normal
+  // form submission (it returns HTML), and a regular form POST avoids the
+  // CORS / opaque-body issues that fetch + no-cors had. The page doesn't
+  // navigate because target points at the iframe.
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrMsg(null);
 
-    // Honeypot — silently swallow bot submissions.
     if (honeypot) {
       setState("success");
       return;
@@ -44,29 +50,11 @@ export function EmailCapture({
     }
 
     setState("submitting");
-    try {
-      const body = new URLSearchParams();
-      body.set("email", email);
-      body.set("metadata__source", source);
-      body.set("tag", source);
-      body.set("embed", "1");
-
-      // no-cors: Buttondown's embed endpoint doesn't expose CORS headers, so
-      // we can't read the response. The submission still reaches them. We
-      // assume success on no network error; duplicate emails are handled
-      // gracefully on Buttondown's end (they just re-send confirmation).
-      await fetch(ENDPOINT, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: body.toString(),
-      });
-
-      setState("success");
-    } catch {
-      setErrMsg("Try again?");
-      setState("error");
-    }
+    formRef.current?.submit();
+    // We can't read the cross-origin iframe response, so optimistically
+    // confirm after a short tick. Duplicates re-trigger confirmation on
+    // Buttondown's end.
+    setTimeout(() => setState("success"), 600);
   };
 
   if (state === "success") {
@@ -84,7 +72,15 @@ export function EmailCapture({
   // form (no surrounding card chrome, no prompt paragraph).
   if (hideHeading) {
     return (
-      <form onSubmit={onSubmit} noValidate className={`relative ${className}`}>
+      <form
+        ref={formRef}
+        onSubmit={onSubmit}
+        action={ENDPOINT}
+        method="post"
+        target={iframeName}
+        noValidate
+        className={`relative ${className}`}
+      >
         <label
           htmlFor={inputId}
           className="mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)] block mb-1.5"
@@ -96,6 +92,7 @@ export function EmailCapture({
           <input
             id={inputId}
             type="email"
+            name="email"
             autoComplete="email"
             value={email}
             onChange={(e) => {
@@ -147,13 +144,26 @@ export function EmailCapture({
           </Link>
           .
         </p>
+        {/* Hidden iframe receives Buttondown's HTML response so the page
+            doesn't navigate away on submit. */}
+        <iframe
+          name={iframeName}
+          title="subscribe"
+          aria-hidden="true"
+          tabIndex={-1}
+          style={{ display: "none" }}
+        />
       </form>
     );
   }
 
   return (
     <form
+      ref={formRef}
       onSubmit={onSubmit}
+      action={ENDPOINT}
+      method="post"
+      target={iframeName}
       noValidate
       className={`rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 ${className}`}
     >
@@ -170,6 +180,7 @@ export function EmailCapture({
         <input
           id={inputId}
           type="email"
+          name="email"
           autoComplete="email"
           value={email}
           onChange={(e) => {
@@ -222,6 +233,13 @@ export function EmailCapture({
         </Link>
         .
       </p>
+      <iframe
+        name={iframeName}
+        title="subscribe"
+        aria-hidden="true"
+        tabIndex={-1}
+        style={{ display: "none" }}
+      />
     </form>
   );
 }

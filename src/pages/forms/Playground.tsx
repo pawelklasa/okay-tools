@@ -594,7 +594,7 @@ export function FormPlayground() {
               I'll email you when the next one ships.
             </h2>
             <p className="text-[13px] leading-relaxed text-[var(--color-fg-muted)]">
-              Two emails a year. Maybe three.
+              One email per tool. Roughly every couple of months.
             </p>
           </div>
           <div className="md:min-w-[340px]">
