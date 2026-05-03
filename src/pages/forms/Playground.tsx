@@ -18,6 +18,7 @@ type Metrics = {
   errorsShown: number;
   errorsVanishedWhileTyping: number;
   punishedForTyping: number;
+  errorsAtSubmit: number;
 };
 
 const STRATEGIES: { id: Strategy; label: string; tagline: string }[] = [
@@ -129,6 +130,7 @@ export function FormPlayground() {
   const startedAt = useRef<number>(Date.now());
   const lastErrorState = useRef<Set<FieldKey>>(new Set());
   const skipNextDiff = useRef(false);
+  const prevSubmittedRef = useRef(false);
   const demoTimers = useRef<number[]>([]);
   const [demoRunning, setDemoRunning] = useState(false);
 
@@ -207,8 +209,19 @@ export function FormPlayground() {
       // any of its errors to the new strategy.
       lastErrorState.current = currentErrFields;
       skipNextDiff.current = false;
+      prevSubmittedRef.current = submitted;
       return;
     }
+
+    // Detect the moment submitted flips on — record how many errors the user
+    // sees at that instant. This is Lazy's signature pain.
+    if (submitted && !prevSubmittedRef.current) {
+      const revealed = currentErrFields.size;
+      if (revealed > 0) {
+        setMetrics((m) => ({ ...m, errorsAtSubmit: m.errorsAtSubmit + revealed }));
+      }
+    }
+    prevSubmittedRef.current = submitted;
 
     const prev = lastErrorState.current;
 
@@ -304,16 +317,17 @@ export function FormPlayground() {
     setMetrics(emptyMetrics());
     startedAt.current = Date.now();
     lastErrorState.current = new Set();
+    prevSubmittedRef.current = false;
     setUsernameStatus("idle");
   };
 
-  const runDemo = () => {
+  const runDemo = (mode: "clean" | "messy" = "clean") => {
     cancelDemo();
     resetForm();
     setDemoRunning(true);
 
     // Realistic typing with typo + correct cycles
-    const script = buildDemoScript();
+    const script = buildDemoScript(mode);
     let elapsed = 0;
     script.forEach((step) => {
       elapsed += step.delay;
@@ -326,7 +340,9 @@ export function FormPlayground() {
   };
 
   // Demo step actions, captured in a closure that mutates state setters above
-  function buildDemoScript(): { delay: number; run: () => void }[] {
+  function buildDemoScript(
+    mode: "clean" | "messy" = "clean"
+  ): { delay: number; run: () => void }[] {
     const out: { delay: number; run: () => void }[] = [];
 
     const typeInto = (field: FieldKey, text: string, perChar = 70) => {
@@ -390,32 +406,59 @@ export function FormPlayground() {
     typeInto("email", "paw");
     typeInto("email", "paw@gmial"); // user notices typo while typing
     backspaceTo("email", "paw@g"); // backspace
-    typeInto("email", "paw@gmail.com");
-    blur("email");
+    if (mode === "messy") {
+      // Leave email subtly broken: missing TLD
+      typeInto("email", "paw@gmail");
+      blur("email");
+    } else {
+      typeInto("email", "paw@gmail.com");
+      blur("email");
+    }
 
     // Password — start short, build up
     typeInto("password", "letme");
-    typeInto("password", "letmein");
-    typeInto("password", "letmein1");
-    blur("password");
+    if (mode === "messy") {
+      // User gives up early; password too short, no number
+      blur("password");
+    } else {
+      typeInto("password", "letmein");
+      typeInto("password", "letmein1");
+      blur("password");
+    }
 
     // Confirm — mistype first
     typeInto("confirm", "letme");
-    typeInto("confirm", "letmeIN1"); // mismatch case
-    backspaceTo("confirm", "let");
-    typeInto("confirm", "letmein1");
-    blur("confirm");
+    if (mode === "messy") {
+      // User assumes match; doesn't realize password rule violated
+      blur("confirm");
+    } else {
+      typeInto("confirm", "letmeIN1"); // mismatch case
+      backspaceTo("confirm", "let");
+      typeInto("confirm", "letmein1");
+      blur("confirm");
+    }
 
-    // Username — try a taken one
+    // Username
     typeInto("username", "paw");
-    blur("username");
-    backspaceTo("username", "");
-    typeInto("username", "paw_2026");
-    blur("username");
+    if (mode === "messy") {
+      // User picks a taken name and moves on
+      blur("username");
+    } else {
+      blur("username");
+      backspaceTo("username", "");
+      typeInto("username", "paw_2026");
+      blur("username");
+    }
 
     // Card — type and validate
-    typeInto("card", "4242424242424242", 50);
-    blur("card");
+    if (mode === "messy") {
+      // Off-by-one digit; fails Luhn
+      typeInto("card", "4242424242424241", 50);
+      blur("card");
+    } else {
+      typeInto("card", "4242424242424242", 50);
+      blur("card");
+    }
 
     submit();
     return out;
@@ -438,9 +481,10 @@ export function FormPlayground() {
           <span className="text-[var(--color-fg-dim)]">One isn't hostile.</span>
         </h1>
         <p className="mt-4 text-[15px] leading-relaxed text-[var(--color-fg-muted)] max-w-2xl">
-          Pick a strategy, then type — or hit{" "}
-          <span className="text-[var(--color-fg)]">Demo it for me</span> and watch what each
-          strategy does to the same realistic typing session.
+          Pick a strategy, then type — or run the demos. Try{" "}
+          <span className="text-[var(--color-fg)]">Clean run</span> to see careful typing,
+          then <span className="text-[var(--color-fg)]">With mistakes</span> to see what each
+          strategy does when the user gets it wrong. The cracks show on the messy run.
         </p>
       </section>
 
@@ -459,12 +503,22 @@ export function FormPlayground() {
                 Stop demo
               </button>
             ) : (
-              <button
-                onClick={runDemo}
-                className="mono text-[11px] px-3 py-1.5 rounded-full bg-[#FFDD00] text-black font-semibold hover:scale-[1.02] active:scale-[0.99] transition"
-              >
-                ▶ Demo it for me
-              </button>
+              <>
+                <button
+                  onClick={() => runDemo("clean")}
+                  title="User types carefully and fixes their typos"
+                  className="mono text-[11px] px-3 py-1.5 rounded-full bg-[#FFDD00] text-black font-semibold hover:scale-[1.02] active:scale-[0.99] transition"
+                >
+                  ▶ Clean run
+                </button>
+                <button
+                  onClick={() => runDemo("messy")}
+                  title="User makes realistic mistakes and submits anyway"
+                  className="mono text-[11px] px-3 py-1.5 rounded-full border border-[#FFDD00] text-[#FFDD00] hover:bg-[#FFDD00]/10 transition"
+                >
+                  ▶ With mistakes
+                </button>
+              </>
             )}
             <button
               onClick={resetForm}
@@ -844,11 +898,17 @@ function RevealPanel({
   const recorded = STRATEGIES.filter((s) => merged[s.id]);
   const showCompare = recorded.length >= 2;
 
+  const wallAtSubmit = metrics.errorsAtSubmit > 0;
+
   // For comparison, headline metric across strategies
   const compareMax = Math.max(
     1,
     ...recorded.map((s) =>
-      Math.max(merged[s.id]!.punishedForTyping, merged[s.id]!.errorsShown)
+      Math.max(
+        merged[s.id]!.punishedForTyping,
+        merged[s.id]!.errorsAtSubmit,
+        merged[s.id]!.errorsShown
+      )
     )
   );
 
@@ -874,29 +934,51 @@ function RevealPanel({
         What this strategy is doing to the user, in numbers.
       </p>
 
-      {/* Verdict block */}
-      <div
-        className={`rounded-[var(--radius)] border p-4 transition ${
-          punished
-            ? "border-[oklch(0.65_0.18_75)] bg-[oklch(0.30_0.10_75/0.30)]"
-            : "border-[var(--color-border)] bg-[var(--color-bg)]"
-        } ${flashMetric ? "flash-warn" : ""}`}
-      >
-        <p className="mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)]">
-          Punished for typing
-        </p>
-        <p
-          className={`mt-1 text-[36px] font-semibold tabular-nums tracking-tight ${
-            punished ? "text-[#FFDD00]" : "text-[var(--color-fg)]"
+      {/* Verdict blocks — two pains, side by side */}
+      <div className="grid grid-cols-2 gap-2">
+        <div
+          className={`rounded-[var(--radius)] border p-4 transition ${
+            punished
+              ? "border-[oklch(0.65_0.18_75)] bg-[oklch(0.30_0.10_75/0.30)]"
+              : "border-[var(--color-border)] bg-[var(--color-bg)]"
+          } ${flashMetric ? "flash-warn" : ""}`}
+        >
+          <p className="mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)] leading-tight">
+            Punished<br />mid-typing
+          </p>
+          <p
+            className={`mt-1 text-[32px] font-semibold tabular-nums tracking-tight ${
+              punished ? "text-[#FFDD00]" : "text-[var(--color-fg)]"
+            }`}
+          >
+            {metrics.punishedForTyping}
+          </p>
+          <p className="text-[11px] text-[var(--color-fg-muted)] mt-1 leading-snug">
+            {punished ? "Scolded before they finished." : "No mid-typing scolding."}
+          </p>
+        </div>
+
+        <div
+          className={`rounded-[var(--radius)] border p-4 transition ${
+            wallAtSubmit
+              ? "border-[oklch(0.65_0.18_75)] bg-[oklch(0.30_0.10_75/0.30)]"
+              : "border-[var(--color-border)] bg-[var(--color-bg)]"
           }`}
         >
-          {metrics.punishedForTyping}
-        </p>
-        <p className="text-[12px] text-[var(--color-fg-muted)] mt-1 leading-snug">
-          {punished
-            ? "Errors that appeared mid-typing, before the user could finish."
-            : "No mid-typing scolding. Yet."}
-        </p>
+          <p className="mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)] leading-tight">
+            Wall at<br />submit
+          </p>
+          <p
+            className={`mt-1 text-[32px] font-semibold tabular-nums tracking-tight ${
+              wallAtSubmit ? "text-[#FFDD00]" : "text-[var(--color-fg)]"
+            }`}
+          >
+            {metrics.errorsAtSubmit}
+          </p>
+          <p className="text-[11px] text-[var(--color-fg-muted)] mt-1 leading-snug">
+            {wallAtSubmit ? "Errors revealed all at once." : "Nothing dumped at submit."}
+          </p>
+        </div>
       </div>
 
       <Stat label="Time to first error">
@@ -914,7 +996,7 @@ function RevealPanel({
           <p className="mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)] mb-2">
             Compare this session
           </p>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2.5">
             {STRATEGIES.map((s) => {
               const m = merged[s.id];
               if (!m) {
@@ -929,7 +1011,7 @@ function RevealPanel({
                 );
               }
               const punishedW = (m.punishedForTyping / compareMax) * 100;
-              const errW = (m.errorsShown / compareMax) * 100;
+              const wallW = (m.errorsAtSubmit / compareMax) * 100;
               const isCurrent = s.id === currentStrategy;
               return (
                 <div key={s.id} className="flex items-center gap-2">
@@ -941,7 +1023,10 @@ function RevealPanel({
                     {s.label}
                   </span>
                   <div className="flex-1 flex flex-col gap-0.5">
-                    <div className="h-2 rounded-full bg-[var(--color-surface-2)] overflow-hidden">
+                    <div
+                      className="h-2 rounded-full bg-[var(--color-surface-2)] overflow-hidden"
+                      title="Punished mid-typing"
+                    >
                       <div
                         className="h-full"
                         style={{
@@ -950,18 +1035,22 @@ function RevealPanel({
                         }}
                       />
                     </div>
-                    <div className="h-1.5 rounded-full bg-[var(--color-surface-2)] overflow-hidden">
+                    <div
+                      className="h-2 rounded-full bg-[var(--color-surface-2)] overflow-hidden"
+                      title="Errors revealed at submit"
+                    >
                       <div
                         className="h-full"
                         style={{
-                          width: `${Math.max(errW, m.errorsShown > 0 ? 4 : 0)}%`,
-                          background: "oklch(0.65 0.18 75)",
+                          width: `${Math.max(wallW, m.errorsAtSubmit > 0 ? 4 : 0)}%`,
+                          background:
+                            m.errorsAtSubmit > 0 ? "oklch(0.65 0.18 35)" : "transparent",
                         }}
                       />
                     </div>
                   </div>
-                  <span className="mono text-[10px] tabular-nums text-[var(--color-fg-muted)] w-14 text-right">
-                    {m.punishedForTyping}/{m.errorsShown}
+                  <span className="mono text-[10px] tabular-nums text-[var(--color-fg-muted)] w-16 text-right">
+                    {m.punishedForTyping} / {m.errorsAtSubmit}
                   </span>
                 </div>
               );
@@ -969,9 +1058,13 @@ function RevealPanel({
           </div>
           <p className="mono text-[9.5px] text-[var(--color-fg-dim)] mt-2 leading-relaxed">
             <span className="inline-block w-2 h-2 rounded-sm bg-[#FFDD00] align-middle mr-1.5" />
-            punished
-            <span className="inline-block w-2 h-2 rounded-sm bg-[oklch(0.65_0.18_75)] align-middle ml-3 mr-1.5" />
-            total errors
+            punished mid-typing
+            <span className="inline-block w-2 h-2 rounded-sm bg-[oklch(0.65_0.18_35)] align-middle ml-3 mr-1.5" />
+            wall at submit
+          </p>
+          <p className="text-[11px] text-[var(--color-fg-muted)] mt-2 leading-snug">
+            Two failure modes. Eager punishes during. Lazy ambushes at the end. Smart picks
+            the right moment per field.
           </p>
         </div>
       )}
@@ -1201,6 +1294,7 @@ function emptyMetrics(): Metrics {
     errorsShown: 0,
     errorsVanishedWhileTyping: 0,
     punishedForTyping: 0,
+    errorsAtSubmit: 0,
   };
 }
 
