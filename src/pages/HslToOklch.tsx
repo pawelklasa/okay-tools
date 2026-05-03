@@ -72,7 +72,7 @@ export function HslToOklch() {
             ? "Appearance preserved. The migration-safe default."
             : "Lightness re-mapped so 50% reads as mid-grey. Colours will shift."}{" "}
           <Link
-            to="/hsl-lies"
+            to="/color/hsl-lies"
             className="underline decoration-[var(--color-border-strong)] underline-offset-[3px] hover:decoration-[var(--color-fg)] text-[var(--color-fg-muted)]"
           >
             What's the difference? →

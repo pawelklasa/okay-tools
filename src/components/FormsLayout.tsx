@@ -1,34 +1,36 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 
 const tools = [
-  { to: "/hsl-to-oklch", label: "HSL → OKLCH" },
-  { to: "/palette", label: "Palette Generator" },
-  { to: "/ramp", label: "Ramp" },
-  { to: "/gradient", label: "Gradient" },
-  { to: "/hsl-lies", label: "HSL Lies" },
-  { to: "/contrast", label: "Contrast" },
+  { to: "/forms", label: "Playground", end: true },
 ];
 
-const soon = [
-  "Figma plugin",
-];
+const soon = ["Layout hostility", "Copy hostility"];
 
-export function Layout() {
+export function FormsLayout() {
   return (
     <div className="min-h-full grid grid-cols-1 md:grid-cols-[220px_1fr]">
-      {/* Sidebar (desktop) */}
       <aside className="hidden md:flex flex-col bg-[var(--color-bg)] sticky top-0 h-screen border-r border-[var(--color-border)] overflow-y-auto">
-        <div className="px-6 pt-7 pb-8">
-          <Link to="/" className="flex items-center gap-2.5">
+        <div className="px-6 pt-7 pb-3">
+          <Link
+            to="/"
+            className="mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)] hover:text-[var(--color-fg)] transition inline-flex items-center gap-1.5"
+          >
+            <span aria-hidden>←</span> okay.tools
+          </Link>
+        </div>
+        <div className="px-6 pb-7">
+          <Link to="/forms" className="flex items-center gap-2.5">
             <span
-              className="w-6 h-6 rounded-md"
+              className="w-6 h-6 rounded-md grid place-items-center"
               style={{
-                background:
-                  "conic-gradient(from 0deg, oklch(0.72 0.18 30), oklch(0.72 0.18 110), oklch(0.72 0.18 200), oklch(0.72 0.18 290), oklch(0.72 0.18 30))",
+                background: "oklch(0.22 0.04 75)",
+                border: "1px solid oklch(0.65 0.18 75)",
               }}
-            />
-            <span className="font-semibold tracking-tight text-[15px]">
-              okay<span className="text-[var(--color-fg-dim)]">.tools</span>
+            >
+              <span className="mono text-[10px] font-bold text-[oklch(0.85_0.16_75)]">!</span>
+            </span>
+            <span className="font-semibold tracking-tight text-[14px] leading-tight">
+              form<span className="text-[var(--color-fg-dim)]">-hostility</span>
             </span>
           </Link>
         </div>
@@ -38,6 +40,7 @@ export function Layout() {
             <NavLink
               key={t.to}
               to={t.to}
+              end={t.end}
               className={({ isActive }) =>
                 `px-3 py-2 rounded-md text-[14px] transition ${
                   isActive
@@ -52,14 +55,6 @@ export function Layout() {
         </nav>
 
         <div className="px-6 pt-6 pb-2 flex flex-col gap-1.5 text-[13px]">
-          <a
-            href="https://medium.com/design-bootcamp/color-is-finally-ok-82f368f3408c"
-            target="_blank"
-            rel="noreferrer"
-            className="text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
-          >
-            Read the article ↗
-          </a>
           <a
             href="https://github.com/pawelklasa/okay-tools"
             target="_blank"
@@ -79,7 +74,6 @@ export function Layout() {
               <li
                 key={s}
                 className="px-3 py-1.5 text-[13px] text-[var(--color-fg-dim)] cursor-default"
-                title="Shipping soon"
               >
                 {s}
               </li>
@@ -92,38 +86,24 @@ export function Layout() {
         </div>
       </aside>
 
-      {/* Mobile top bar */}
       <header className="md:hidden border-b border-[var(--color-border)] sticky top-0 bg-[var(--color-bg)] z-10">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="font-semibold tracking-tight">
-            okay<span className="text-[var(--color-fg-dim)]">.tools</span>
+        <div className="px-4 py-3 flex items-center gap-3">
+          <Link
+            to="/"
+            className="mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]"
+          >
+            ← okay.tools
+          </Link>
+          <Link to="/forms" className="font-semibold tracking-tight text-[13px]">
+            form<span className="text-[var(--color-fg-dim)]">-hostility</span>
           </Link>
         </div>
-        <nav className="flex gap-1 px-2 pb-2 overflow-x-auto">
-          {tools.map((t) => (
-            <NavLink
-              key={t.to}
-              to={t.to}
-              className={({ isActive }) =>
-                `whitespace-nowrap px-3 py-1.5 rounded-md text-sm ${
-                  isActive
-                    ? "bg-[var(--color-surface)] text-[var(--color-fg)]"
-                    : "text-[var(--color-fg-muted)]"
-                }`
-              }
-            >
-              {t.label}
-            </NavLink>
-          ))}
-        </nav>
       </header>
 
-      {/* Main */}
       <main className="min-w-0 animate-in">
         <Outlet />
       </main>
 
-      {/* Floating tip jar — top right, fixed */}
       <a
         href="https://buy.stripe.com/5kQ6oJ6Qebt63GN9G71wY00"
         target="_blank"

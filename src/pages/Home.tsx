@@ -149,14 +149,14 @@ function Hero() {
       </p>
       <div className="mt-7 flex items-center gap-3">
         <Link
-          to="/hsl-to-oklch"
+          to="/color/hsl-to-oklch"
           className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-[#FFDD00] text-black text-sm font-semibold hover:scale-[1.02] active:scale-[0.99] transition shadow-[0_4px_14px_rgba(255,221,0,0.15)]"
         >
           Migrate your HSL palette
           <span aria-hidden>→</span>
         </Link>
         <Link
-          to="/hsl-lies"
+          to="/color/hsl-lies"
           className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-[var(--color-border-strong)] text-[var(--color-fg-muted)] text-sm font-medium hover:text-[var(--color-fg)] hover:border-[var(--color-fg)] transition"
         >
           Or play with the lie →
@@ -236,7 +236,7 @@ function CardShell({
 function HslLiesCard() {
   return (
     <CardShell
-      to="/hsl-lies"
+      to="/color/hsl-lies"
       title="HSL Lies"
       blurb="Twin sliders. One drifts the hue. The other holds it."
       preview={
@@ -278,7 +278,7 @@ function MigratorCard() {
   ];
   return (
     <CardShell
-      to="/hsl-to-oklch"
+      to="/color/hsl-to-oklch"
       title="HSL → OKLCH"
       blurb="Paste HSL. Get OKLCH. See exactly which colours HSL was lying about."
       preview={
@@ -325,7 +325,7 @@ function RampCard() {
   const rows = formatRamp(ramp);
   return (
     <CardShell
-      to="/ramp"
+      to="/color/ramp"
       title="Ramp Generator"
       blurb="One anchor in. Eleven balanced steps out. Export to your stack."
       preview={
@@ -353,7 +353,7 @@ function PaletteCard() {
   const hues = [245, 265, 285, 305, 325];
   return (
     <CardShell
-      to="/palette"
+      to="/color/palette"
       title="Palette Generator"
       blurb="From one colour to a system: primary, harmony, neutrals, and semantics."
       preview={
@@ -384,7 +384,7 @@ function ThemeBuilderCard() {
   const lightStops = [0.985, 0.95, 0.88, 0.78, 0.66, 0.55, 0.4, 0.25];
   return (
     <CardShell
-      to="/dark-mode"
+      to="/color/dark-mode"
       title="Light + Dark Theme"
       blurb="One brand colour. Both modes. Semantic tokens you can paste."
       preview={
@@ -418,7 +418,7 @@ function ContrastCard() {
   const bg = "oklch(0.30 0.06 230)";
   return (
     <CardShell
-      to="/contrast"
+      to="/color/contrast"
       title="Contrast Finder"
       blurb="Every WCAG + APCA passing pair from your ramp, ranked by ΔL."
       preview={
@@ -447,7 +447,7 @@ function GradientCard() {
   // Show two gradient bands — sRGB collapses through grey, OKLCH stays vivid
   return (
     <CardShell
-      to="/gradient"
+      to="/color/gradient"
       title="Gradient Lab"
       blurb="The same blend across five colour spaces. Watch sRGB collapse."
       preview={

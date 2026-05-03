@@ -154,7 +154,7 @@ export function PaletteGenerator() {
     setTimeout(() => setCopied(false), 1200);
   };
 
-  const rampUrl = `/ramp?s=${encodeRamp({
+  const rampUrl = `/color/ramp?s=${encodeRamp({
     anchor,
     name: "primary",
     curve: "linear",
@@ -213,7 +213,7 @@ export function PaletteGenerator() {
               <span aria-hidden>→</span>
             </Link>
             <Link
-              to="/dark-mode"
+              to="/color/dark-mode"
               className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-[12px] text-[var(--color-fg-muted)] hover:text-[var(--color-fg)] hover:border-[var(--color-border-strong)] transition inline-flex items-center justify-between gap-2"
             >
               <span className="inline-flex items-center gap-2">
