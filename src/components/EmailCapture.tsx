@@ -1,8 +1,8 @@
 import { useState, useId } from "react";
 import { Link } from "react-router-dom";
 
-// Replace with your actual Buttondown username when account is set up.
-const BUTTONDOWN_USERNAME = "okaytools";
+// Buttondown account username (https://buttondown.com/<username>).
+const BUTTONDOWN_USERNAME = "pav";
 const ENDPOINT = `https://buttondown.com/api/emails/embed-subscribe/${BUTTONDOWN_USERNAME}`;
 
 type State = "idle" | "submitting" | "success" | "error";
