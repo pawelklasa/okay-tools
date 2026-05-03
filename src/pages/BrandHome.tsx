@@ -33,13 +33,13 @@ export function BrandHome() {
       </section>
 
       {/* Apps */}
-      <section className="px-8 lg:px-16 pb-20 grid md:grid-cols-2 gap-5">
+      <section className="px-8 lg:px-16 pb-10 grid md:grid-cols-2 gap-5">
         <ColorAppCard />
         <FormsAppCard />
       </section>
 
       {/* Email capture — full-bleed band so it can't be missed */}
-      <section className="px-8 lg:px-16 pb-20">
+      <section className="px-8 lg:px-16 pb-16">
         <div
           className="rounded-[var(--radius-lg)] border border-[#FFDD00]/40 p-8 lg:p-12 grid md:grid-cols-[1fr_auto] gap-8 items-center"
           style={{
@@ -185,7 +185,7 @@ function FormsAppCard() {
           </p>
           <div className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 flex items-center justify-between">
             <span className="mono text-[11px] text-[var(--color-fg)]">paw</span>
-            <span className="mono text-[10px] text-[oklch(0.78_0.16_155)]">✓ still typing…</span>
+            <span className="mono text-[10px] text-[var(--color-fg-dim)]">· still typing</span>
           </div>
         </div>
       </div>

@@ -129,7 +129,7 @@ export function EmailCapture({
             disabled={state === "submitting"}
             className="mono text-[12px] px-4 py-2.5 rounded-[var(--radius-sm)] bg-[#FFDD00] text-black font-semibold hover:scale-[1.01] active:scale-[0.99] transition disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap"
           >
-            {state === "submitting" ? "Sending…" : "Tell me"}
+            {state === "submitting" ? "Sending…" : "I'm in"}
           </button>
         </div>
 
@@ -139,7 +139,10 @@ export function EmailCapture({
 
         <p className="text-[11px] text-[var(--color-fg-dim)] leading-snug">
           Used only for tool announcements. Unsubscribe anytime.{" "}
-          <Link to="/privacy" className="underline hover:text-[var(--color-fg-muted)]">
+          <Link
+            to="/privacy"
+            className="underline decoration-[var(--color-border-strong)] underline-offset-2 text-[var(--color-fg-muted)] hover:text-[var(--color-fg)] hover:decoration-[var(--color-fg)] transition-colors"
+          >
             Privacy
           </Link>
           .
@@ -201,7 +204,7 @@ export function EmailCapture({
           disabled={state === "submitting"}
           className="mono text-[12px] px-4 py-2.5 rounded-[var(--radius-sm)] bg-[#FFDD00] text-black font-semibold hover:scale-[1.01] active:scale-[0.99] transition disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {state === "submitting" ? "Sending…" : "Tell me"}
+          {state === "submitting" ? "Sending…" : "I'm in"}
         </button>
       </div>
 
@@ -211,7 +214,10 @@ export function EmailCapture({
 
       <p className="text-[11px] text-[var(--color-fg-dim)] leading-snug">
         Email used only for tool announcements. Unsubscribe anytime.{" "}
-        <Link to="/privacy" className="underline hover:text-[var(--color-fg-muted)]">
+        <Link
+          to="/privacy"
+          className="underline decoration-[var(--color-border-strong)] underline-offset-2 text-[var(--color-fg-muted)] hover:text-[var(--color-fg)] hover:decoration-[var(--color-fg)] transition-colors"
+        >
           Privacy
         </Link>
         .
