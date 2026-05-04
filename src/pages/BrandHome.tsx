@@ -31,7 +31,7 @@ export function BrandHome() {
           Two apps. Both reveal something your design system pretends isn't broken.
         </p>
         <p className="mt-8 text-[15px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl">
-          Most design defaults — colours, validation, spacing, typography — get accepted without
+          Most <span className="font-semibold text-[#FFDD00]">design defaults</span> — colours, validation, spacing, typography — get accepted without
           evaluation. AI tools ship them faster than ever. okay.tools makes the cost visible.
         </p>
       </section>
