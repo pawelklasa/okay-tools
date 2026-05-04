@@ -19,7 +19,7 @@ export function BrandHome() {
       </header>
 
       {/* Hero */}
-      <section className="px-8 lg:px-16 pt-20 lg:pt-28 pb-12 max-w-5xl">
+      <section className="px-8 lg:px-16 pt-8 lg:pt-12 pb-7 max-w-5xl">
         <p className="mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-fg-dim)] mb-6">
           A small studio of tools that make the invisible obvious
         </p>
@@ -27,7 +27,7 @@ export function BrandHome() {
           <span className="text-[var(--color-fg-dim)]">Pick your</span>{" "}
           poison.
         </h1>
-        <p className="mt-5 text-[16px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl">
+        <p className="mt-3 text-[16px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl">
           Two apps. Both reveal something your design system pretends isn't broken.
         </p>
         <p className="mt-8 text-[15px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl lg:max-w-3xl">
@@ -291,33 +291,29 @@ function TokenCostumesCard() {
     <div
       className="relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col opacity-70"
     >
-      {/* Preview: token audit verdict, two stacked rows */}
-      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-3">
+      {/* Preview: code listing with annotations — reads as a CSS snippet, not form fields */}
+      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-5">
         <div className="flex flex-col gap-1.5">
-          <p className="mono text-[9.5px] uppercase tracking-wider text-[var(--color-fg-dim)]">
+          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
             Primitive in costume
           </p>
-          <div className="rounded border border-[oklch(0.65_0.18_75)] bg-[var(--color-surface)] px-3 py-2 flex items-center justify-between gap-2 shadow-[0_0_0_3px_oklch(0.65_0.18_75/0.18)]">
-            <span className="mono text-[11px] text-[var(--color-fg)] truncate">
-              --color-primary
-            </span>
-            <span className="mono text-[10px] font-semibold text-[#FFDD00] whitespace-nowrap">
-              ⚠ used 6 ways
-            </span>
-          </div>
+          <code className="mono text-[11px] leading-snug text-[var(--color-fg)] bg-[var(--color-surface-2)] px-2 py-1 rounded-sm break-all">
+            --color-primary: #3b82f6
+          </code>
+          <p className="mono text-[10px] leading-snug text-[var(--color-fg-dim)]">
+            // used as bg, link, icon, border, text, ring
+          </p>
         </div>
         <div className="flex flex-col gap-1.5">
-          <p className="mono text-[9.5px] uppercase tracking-wider text-[var(--color-fg-dim)]">
+          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
             Honest token
           </p>
-          <div className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 flex items-center justify-between gap-2">
-            <span className="mono text-[11px] text-[var(--color-fg)] truncate">
-              --color-action
-            </span>
-            <span className="mono text-[10px] text-[oklch(0.78_0.16_155)] whitespace-nowrap">
-              ✓ → --color-blue-500
-            </span>
-          </div>
+          <code className="mono text-[11px] leading-snug text-[var(--color-fg)] bg-[var(--color-surface-2)] px-2 py-1 rounded-sm break-all">
+            --color-action: var(--color-blue-500)
+          </code>
+          <p className="mono text-[10px] leading-snug text-[var(--color-fg-dim)]">
+            // aliases primitive, single purpose
+          </p>
         </div>
       </div>
       <div className="p-6">
