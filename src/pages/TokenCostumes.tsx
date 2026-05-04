@@ -57,34 +57,55 @@ export function TokenCostumes() {
       </section>
 
       <section className="px-6 lg:px-12 pb-10 grid lg:grid-cols-2 gap-5 items-start">
-        {/* Input */}
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden flex flex-col">
-          <div className="px-5 py-3 border-b border-[var(--color-border)] flex items-center justify-between gap-3">
-            <p className="mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-fg-dim)]">
-              Paste tokens
-            </p>
-            <div className="flex items-center gap-3">
-              <FormatBadge format={result.format} />
-              <button
-                onClick={() => setText(SAMPLE_JSON)}
-                className="mono text-[10px] uppercase tracking-[0.16em] text-[#FFDD00] hover:underline underline-offset-2"
-              >
-                Load example
-              </button>
+        {/* Input column */}
+        <div className="flex flex-col gap-5">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden flex flex-col">
+            <div className="px-5 py-3 border-b border-[var(--color-border)] flex items-center justify-between gap-3">
+              <p className="mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-fg-dim)]">
+                Paste tokens
+              </p>
+              <div className="flex items-center gap-3">
+                <FormatBadge format={result.format} />
+                <button
+                  onClick={() => setText(SAMPLE_JSON)}
+                  className="mono text-[10px] uppercase tracking-[0.16em] text-[#FFDD00] hover:underline underline-offset-2"
+                >
+                  Load example
+                </button>
+              </div>
             </div>
+            <div className="relative flex-1 flex">
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder={`Paste tokens.json with $value/$type, a CSS :root { --color-... } block, or a Tailwind colors object.`}
+                spellCheck={false}
+                autoCorrect="off"
+                autoCapitalize="off"
+                autoComplete="off"
+                data-gramm="false"
+                data-gramm_editor="false"
+                data-enable-grammarly="false"
+                data-lt-active="false"
+                className="mono text-[12px] leading-relaxed bg-[var(--color-bg)] text-[var(--color-fg)] p-5 pr-20 outline-none resize-none w-full min-h-[640px] lg:min-h-[720px] placeholder:text-[var(--color-fg-dim)]"
+              />
+              {text && (
+                <button
+                  onClick={() => setText("")}
+                  className="absolute bottom-3 right-4 mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)] hover:text-[var(--color-fg)] transition"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            {result.error && (
+              <div className="px-5 py-3 border-t border-[var(--color-border)] mono text-[11px] text-[#FFDD00]">
+                ⚠ {result.error}
+              </div>
+            )}
           </div>
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder={`Paste tokens.json with $value/$type, a CSS :root { --color-... } block, or a Tailwind colors object.`}
-            spellCheck={false}
-            className="mono text-[12px] leading-relaxed bg-[var(--color-bg)] text-[var(--color-fg)] p-5 outline-none resize-none min-h-[420px] flex-1 placeholder:text-[var(--color-fg-dim)]"
-          />
-          {result.error && (
-            <div className="px-5 py-3 border-t border-[var(--color-border)] mono text-[11px] text-[#FFDD00]">
-              ⚠ {result.error}
-            </div>
-          )}
+
+          <WhatThisAudits />
         </div>
 
         {/* Reveal */}
@@ -266,41 +287,35 @@ function RevealBody({
       </div>
 
       {/* Findings */}
-      <div className="px-5 py-5 border-b border-[var(--color-border)] flex flex-col gap-5">
+      <div className="px-5 py-5 border-b border-[var(--color-border)] flex flex-col gap-6">
         {audit.costumes.length > 0 && (
           <FindingGroup
             label="Primitive in costume"
-            items={audit.costumes.map((c) => ({
-              code: `${c.token.cssName}: ${c.token.value}`,
-              comment: `// ${c.reason}`,
-            }))}
+            count={audit.costumes.length}
+            comment="each wears a semantic name, defined as a primitive"
+            lines={audit.costumes.map(
+              (c) => `${c.token.cssName}: ${c.token.value}`
+            )}
           />
         )}
 
         {audit.polysemic.length > 0 && (
           <FindingGroup
             label="Polysemic"
-            items={audit.polysemic.map((p) => ({
-              code: p.token.cssName,
-              comment: `// ${p.reason}`,
-            }))}
+            count={audit.polysemic.length}
+            comment="each shares a value with one or more other tokens"
+            lines={audit.polysemic.map((p) => p.token.cssName)}
           />
         )}
 
         {audit.naming && (
           <FindingGroup
             label="Naming drift"
-            items={[
-              {
-                code: audit.naming.tokens
-                  .slice(0, 3)
-                  .map((t) => t.cssName)
-                  .join(", "),
-                comment: `// mixed conventions in the same file: ${audit.naming.conventions.join(
-                  ", "
-                )}`,
-              },
-            ]}
+            count={audit.naming.tokens.length}
+            comment={`mixed conventions in the same file: ${audit.naming.conventions.join(
+              ", "
+            )}`}
+            lines={audit.naming.tokens.map((t) => t.cssName)}
           />
         )}
 
@@ -308,10 +323,9 @@ function RevealBody({
           <FindingGroup
             label="Orphan"
             tone="muted"
-            items={audit.orphans.map((o) => ({
-              code: o.token.cssName,
-              comment: "// declared but never referenced",
-            }))}
+            count={audit.orphans.length}
+            comment="declared but never referenced elsewhere in the file"
+            lines={audit.orphans.map((o) => o.token.cssName)}
           />
         )}
 
@@ -407,29 +421,65 @@ function LayerRow({
 
 function FindingGroup({
   label,
-  items,
+  count,
+  comment,
+  lines,
   tone = "warn",
 }: {
   label: string;
-  items: { code: string; comment: string }[];
+  count: number;
+  comment: string;
+  lines: string[];
   tone?: "warn" | "muted";
 }) {
   const labelTone = tone === "warn" ? "text-[#FFDD00]" : "text-[var(--color-fg-dim)]";
   return (
-    <div className="flex flex-col gap-3">
-      <p className={`mono text-[10px] uppercase tracking-[0.18em] ${labelTone}`}>{label}</p>
-      <div className="flex flex-col gap-3">
-        {items.map((it, i) => (
-          <div key={i} className="flex flex-col gap-1">
-            <code className="mono text-[12px] leading-snug text-[var(--color-fg)] bg-[var(--color-surface-2)] px-2.5 py-1.5 rounded-sm break-all self-start max-w-full">
-              {it.code}
-            </code>
-            <p className="mono text-[11px] leading-snug text-[var(--color-fg-dim)]">
-              {it.comment}
-            </p>
-          </div>
-        ))}
+    <div className="flex flex-col gap-2">
+      <p className={`mono text-[10px] uppercase tracking-[0.18em] ${labelTone}`}>
+        {label}{" "}
+        <span className="text-[var(--color-fg-dim)]">
+          ({count} token{count === 1 ? "" : "s"})
+        </span>
+      </p>
+      <p className="mono text-[11px] leading-snug text-[var(--color-fg-dim)]">
+        // {comment}
+      </p>
+      <pre className="mono text-[12px] leading-relaxed text-[var(--color-fg)] bg-[var(--color-surface-2)] px-3 py-2.5 rounded-sm whitespace-pre-wrap break-all">
+{lines.join("\n")}
+      </pre>
+    </div>
+  );
+}
+
+function WhatThisAudits() {
+  const rows: [string, string][] = [
+    ["Costume tokens", "semantic names defined as primitives."],
+    ["Polysemic tokens", "one token used for many purposes."],
+    ["Layer mapping", "primitives, semantics, components."],
+    ["Naming drift", "mixed conventions in the same file."],
+  ];
+  return (
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden">
+      <div className="px-5 py-3 border-b border-[var(--color-border)]">
+        <p className="mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-fg-dim)]">
+          What this audits
+        </p>
       </div>
+      <ul className="divide-y divide-[var(--color-border)]">
+        {rows.map(([label, desc]) => (
+          <li
+            key={label}
+            className="px-5 py-3 flex items-baseline gap-2 flex-wrap"
+          >
+            <span className="text-[14px] font-semibold tracking-tight text-[var(--color-fg)]">
+              {label}
+            </span>
+            <span className="text-[14px] text-[var(--color-fg-muted)]">
+              — {desc}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

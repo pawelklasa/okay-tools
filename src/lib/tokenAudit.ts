@@ -124,9 +124,9 @@ function walkJson(node: unknown, path: string[], out: Token[]): void {
     const raw = String(obj.$value);
     const aliasMatch = /^\{([^}]+)\}$/.exec(raw);
     const isAlias = !!aliasMatch;
-    const cssName = "--" + path.map(slug).join("-");
+    const cssName = pathToCssName(path);
     const aliasOf = aliasMatch
-      ? "--" + aliasMatch[1].split(".").map(slug).join("-")
+      ? pathToCssName(aliasMatch[1].split("."))
       : undefined;
     out.push({
       name: path.join("."),
@@ -138,6 +138,24 @@ function walkJson(node: unknown, path: string[], out: Token[]): void {
     return;
   }
   for (const k of Object.keys(obj)) walkJson(obj[k], [...path, k], out);
+}
+
+// Build a CSS custom property name from a JSON path. If a child key
+// already restates its parent (e.g. parent "color" + child "color-text"
+// or "colorBackground"), drop the redundant prefix.
+function pathToCssName(path: string[]): string {
+  const parts: string[] = [];
+  for (let i = 0; i < path.length; i++) {
+    const slugged = slug(path[i]);
+    const prev = parts[parts.length - 1];
+    if (prev && (slugged === prev || slugged.startsWith(prev + "-"))) {
+      // child already begins with parent prefix — collapse
+      parts[parts.length - 1] = slugged;
+      continue;
+    }
+    parts.push(slugged);
+  }
+  return "--" + parts.join("-");
 }
 
 function parseCss(text: string): Token[] {

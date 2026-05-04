@@ -283,13 +283,14 @@ function FormsAppCard() {
   );
 }
 
-// Coming-soon card. Static (no link, no hover), muted opacity to signal
-// "in the family but not yet active". Demo mirrors the comparative
-// "bad on top / honest on bottom" pattern used by the other two cards.
+// Active card linking to /tokens. Same demo (PRIMITIVE IN COSTUME /
+// POLYSEMIC / HONEST TOKEN) — now full opacity, hover affordance, and
+// arrow consistent with the other two cards.
 function TokenCostumesCard() {
   return (
-    <div
-      className="relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col opacity-60"
+    <Link
+      to="/tokens"
+      className="group relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col hover:border-[#FFDD00]/60 transition shadow-[0_0_0_0_rgba(255,221,0,0)] hover:shadow-[0_0_40px_-12px_rgba(255,221,0,0.35)]"
     >
       {/* Preview: code listing with annotations — reads as a CSS snippet, not form fields */}
       <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-3">
@@ -332,8 +333,8 @@ function TokenCostumesCard() {
           <h2 className="text-[22px] font-semibold tracking-tight text-[var(--color-fg)]">
             token-costumes
           </h2>
-          <span className="mono text-[10px] uppercase tracking-[0.18em] text-[#FFDD00] whitespace-nowrap">
-            Coming soon
+          <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg">
+            →
           </span>
         </div>
         <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-4">
@@ -351,6 +352,6 @@ function TokenCostumesCard() {
           ))}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
