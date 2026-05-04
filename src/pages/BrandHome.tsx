@@ -30,16 +30,17 @@ export function BrandHome() {
         <p className="mt-5 text-[16px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl">
           Two apps. Both reveal something your design system pretends isn't broken.
         </p>
-        <p className="mt-8 text-[15px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl">
-          Most <span className="font-semibold text-[#FFDD00]">design defaults</span> — colours, validation, spacing, typography — get accepted without
-          evaluation. AI tools ship them faster than ever. okay.tools makes the cost visible.
+        <p className="mt-8 text-[15px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl lg:max-w-3xl">
+          Most <span className="font-semibold text-[#FFDD00]">design defaults</span> get accepted
+          without evaluation. okay.tools makes the cost visible.
         </p>
       </section>
 
       {/* Apps */}
-      <section className="px-8 lg:px-16 pb-10 grid md:grid-cols-2 gap-5">
+      <section className="px-8 lg:px-16 pb-10 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
         <ColorAppCard />
         <FormsAppCard />
+        <TokenCostumesCard />
       </section>
 
       {/* Writing */}
@@ -53,21 +54,23 @@ export function BrandHome() {
             href="https://medium.com/design-bootcamp/color-is-finally-ok-82f368f3408c"
             target="_blank"
             rel="noreferrer"
-            className="group block px-5 py-6 md:px-8 md:py-6 hover:bg-[var(--color-surface)] transition-colors"
+            className="group block px-5 py-4 md:px-8 md:py-4 hover:bg-[var(--color-surface)] transition-colors"
           >
-            <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <div className="flex flex-row items-center gap-4">
               <div className="flex-1 min-w-0">
-                <h3 className="text-[20px] font-semibold tracking-tight text-[var(--color-fg)] mb-2">
-                  Color is finally OK
-                </h3>
-                <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-3">
+                <p className="flex flex-wrap items-baseline gap-x-2 mb-1.5">
+                  <span className="text-[18px] font-semibold tracking-tight text-[var(--color-fg)]">
+                    Color is finally OK
+                  </span>
+                  <span className="mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
+                    <span aria-hidden>·</span> APR 22, 2026
+                  </span>
+                </p>
+                <p className="text-[13px] leading-relaxed text-[var(--color-fg-muted)]">
                   Why HSL was lying about lightness, and what to do about it.
                 </p>
-                <p className="mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
-                  APR 22, 2026
-                </p>
               </div>
-              <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg self-end md:self-auto">
+              <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg self-center">
                 →
               </span>
             </div>
@@ -77,22 +80,23 @@ export function BrandHome() {
             href="#"
             target="_blank"
             rel="noreferrer"
-            className="group block px-5 py-6 md:px-8 md:py-6 hover:bg-[var(--color-surface)] transition-colors"
+            className="group block px-5 py-4 md:px-8 md:py-4 hover:bg-[var(--color-surface)] transition-colors"
           >
-            <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <div className="flex flex-row items-center gap-4">
               <div className="flex-1 min-w-0">
-                <h3 className="text-[20px] font-semibold tracking-tight text-[var(--color-fg)] mb-2">
-                  Form validation is hostile
-                </h3>
-                <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-3">
-                  Four validation strategies. Six failure modes. One playground to feel the
-                  difference.
+                <p className="flex flex-wrap items-baseline gap-x-2 mb-1.5">
+                  <span className="text-[18px] font-semibold tracking-tight text-[var(--color-fg)]">
+                    Form validation is hostile
+                  </span>
+                  <span className="mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
+                    <span aria-hidden>·</span> MAY 6, 2026
+                  </span>
                 </p>
-                <p className="mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
-                  MAY 6, 2026
+                <p className="text-[13px] leading-relaxed text-[var(--color-fg-muted)]">
+                  Four validation strategies. Six failure modes. One playground.
                 </p>
               </div>
-              <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg self-end md:self-auto">
+              <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg self-center">
                 →
               </span>
             </div>
@@ -276,5 +280,70 @@ function FormsAppCard() {
         </div>
       </div>
     </Link>
+  );
+}
+
+// Coming-soon card. Static (no link, no hover), muted opacity to signal
+// "in the family but not yet active". Demo mirrors the comparative
+// "bad on top / honest on bottom" pattern used by the other two cards.
+function TokenCostumesCard() {
+  return (
+    <div
+      className="relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col opacity-70"
+    >
+      {/* Preview: token audit verdict, two stacked rows */}
+      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-3">
+        <div className="flex flex-col gap-1.5">
+          <p className="mono text-[9.5px] uppercase tracking-wider text-[var(--color-fg-dim)]">
+            Primitive in costume
+          </p>
+          <div className="rounded border border-[oklch(0.65_0.18_75)] bg-[var(--color-surface)] px-3 py-2 flex items-center justify-between gap-2 shadow-[0_0_0_3px_oklch(0.65_0.18_75/0.18)]">
+            <span className="mono text-[11px] text-[var(--color-fg)] truncate">
+              --color-primary
+            </span>
+            <span className="mono text-[10px] font-semibold text-[#FFDD00] whitespace-nowrap">
+              ⚠ used 6 ways
+            </span>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <p className="mono text-[9.5px] uppercase tracking-wider text-[var(--color-fg-dim)]">
+            Honest token
+          </p>
+          <div className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 flex items-center justify-between gap-2">
+            <span className="mono text-[11px] text-[var(--color-fg)] truncate">
+              --color-action
+            </span>
+            <span className="mono text-[10px] text-[oklch(0.78_0.16_155)] whitespace-nowrap">
+              ✓ → --color-blue-500
+            </span>
+          </div>
+        </div>
+      </div>
+      <div className="p-6">
+        <div className="flex items-baseline justify-between mb-2 gap-2">
+          <h2 className="text-[22px] font-semibold tracking-tight text-[var(--color-fg)]">
+            token-costumes
+          </h2>
+          <span className="mono text-[10px] uppercase tracking-[0.18em] text-[#FFDD00] whitespace-nowrap">
+            Coming soon
+          </span>
+        </div>
+        <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-4">
+          Audit your token system. See which "semantic" tokens are actually primitives in costume —
+          and what an honest three-layer system looks like.
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {["Costumes", "Polysemy", "Layers", "Naming"].map((t) => (
+            <span
+              key={t}
+              className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
