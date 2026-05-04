@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   auditTokens,
@@ -12,8 +12,9 @@ import {
 
 export function TokenCostumes() {
   const [text, setText] = useState("");
-  const [showDraft, setShowDraft] = useState(false);
+  const [showDraft, setShowDraft] = useState(true);
   const [copied, setCopied] = useState(false);
+  const taRef = useRef<HTMLTextAreaElement>(null);
 
   const result = useMemo(() => audit(text), [text]);
 
@@ -21,6 +22,16 @@ export function TokenCostumes() {
     () => (result.audit ? generateDraftSystem(result.audit) : ""),
     [result.audit]
   );
+
+  // Auto-resize textarea to fit content (with a generous min so an empty
+  // textarea still feels intentional rather than a stub).
+  useEffect(() => {
+    const el = taRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    const min = 420;
+    el.style.height = Math.max(min, el.scrollHeight) + "px";
+  }, [text]);
 
   function copyDraft() {
     if (!draft) return;
@@ -45,9 +56,6 @@ export function TokenCostumes() {
       </header>
 
       <section className="px-6 lg:px-12 pt-12 lg:pt-16 pb-8 max-w-4xl">
-        <p className="mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-fg-dim)] mb-5">
-          token-costumes
-        </p>
         <h1 className="text-[36px] md:text-[52px] lg:text-[60px] font-semibold tracking-[-0.03em] leading-[1.04] text-[var(--color-fg)]">
           Your tokens are wearing costumes.
         </h1>
@@ -76,6 +84,7 @@ export function TokenCostumes() {
             </div>
             <div className="relative flex-1 flex">
               <textarea
+                ref={taRef}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder={`Paste tokens.json with $value/$type, a CSS :root { --color-... } block, or a Tailwind colors object.`}
@@ -87,7 +96,7 @@ export function TokenCostumes() {
                 data-gramm_editor="false"
                 data-enable-grammarly="false"
                 data-lt-active="false"
-                className="mono text-[12px] leading-relaxed bg-[var(--color-bg)] text-[var(--color-fg)] p-5 pr-20 outline-none resize-none w-full min-h-[640px] lg:min-h-[720px] placeholder:text-[var(--color-fg-dim)]"
+                className="mono text-[12px] leading-relaxed bg-[var(--color-bg)] text-[var(--color-fg)] p-5 pr-20 outline-none resize-none w-full overflow-hidden placeholder:text-[var(--color-fg-dim)]"
               />
               {text && (
                 <button
@@ -106,6 +115,7 @@ export function TokenCostumes() {
           </div>
 
           <WhatThisAudits />
+          <WhyItMatters />
         </div>
 
         {/* Reveal */}
@@ -156,9 +166,7 @@ export function TokenCostumes() {
         </div>
       </section>
 
-      <footer className="px-6 lg:px-12 pb-10 mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
-        okay.tools · token-costumes
-      </footer>
+      <footer className="px-6 lg:px-12 pb-10" />
     </div>
   );
 }
@@ -349,7 +357,7 @@ function RevealBody({
           onClick={onToggleDraft}
           className="self-start mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)] hover:text-[var(--color-fg)] transition"
         >
-          {showDraft ? "Hide preview" : "Preview what gets copied"}
+          {showDraft ? "Hide preview" : "Show preview"}
         </button>
         {showDraft && (
           <pre className="mono text-[11px] leading-relaxed bg-[var(--color-bg)] border border-[var(--color-border)] rounded-md p-4 overflow-x-auto whitespace-pre-wrap break-all text-[var(--color-fg)]">
@@ -452,11 +460,39 @@ function FindingGroup({
 }
 
 function WhatThisAudits() {
-  const rows: [string, string][] = [
-    ["Costume tokens", "semantic names defined as primitives."],
-    ["Polysemic tokens", "one token used for many purposes."],
-    ["Layer mapping", "primitives, semantics, components."],
-    ["Naming drift", "mixed conventions in the same file."],
+  const rows: { label: string; desc: string; example: string[] }[] = [
+    {
+      label: "Costume tokens",
+      desc: "semantic names defined as primitives.",
+      example: [
+        "--color-primary: #3b82f6           // costume",
+        "--color-primary: var(--color-blue-500)  // honest",
+      ],
+    },
+    {
+      label: "Polysemic tokens",
+      desc: "one token used for many purposes.",
+      example: [
+        "--color-primary used as bg, link, icon,",
+        "border, text, ring — six tokens in costume.",
+      ],
+    },
+    {
+      label: "Layer mapping",
+      desc: "primitives, semantics, components.",
+      example: [
+        "Primitives hold values. Semantic aliases",
+        "name purposes. Components reference semantics.",
+      ],
+    },
+    {
+      label: "Naming drift",
+      desc: "mixed conventions in the same file.",
+      example: [
+        "--color-primary-500 (kebab) and",
+        "colorBackground (camel) in one file is drift.",
+      ],
+    },
   ];
   return (
     <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden">
@@ -466,20 +502,47 @@ function WhatThisAudits() {
         </p>
       </div>
       <ul className="divide-y divide-[var(--color-border)]">
-        {rows.map(([label, desc]) => (
-          <li
-            key={label}
-            className="px-5 py-3 flex items-baseline gap-2 flex-wrap"
-          >
-            <span className="text-[14px] font-semibold tracking-tight text-[var(--color-fg)]">
-              {label}
-            </span>
-            <span className="text-[14px] text-[var(--color-fg-muted)]">
-              — {desc}
-            </span>
+        {rows.map(({ label, desc, example }) => (
+          <li key={label} className="px-5 py-4">
+            <div className="flex items-baseline gap-2 flex-wrap mb-2">
+              <span className="text-[14px] font-semibold tracking-tight text-[var(--color-fg)]">
+                {label}
+              </span>
+              <span className="text-[14px] text-[var(--color-fg-muted)]">
+                — {desc}
+              </span>
+            </div>
+            <pre className="mono text-[11px] leading-relaxed text-[var(--color-fg-muted)] bg-[var(--color-surface-2)] px-3 py-2 rounded-sm whitespace-pre-wrap break-all">
+{example.join("\n")}
+            </pre>
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function WhyItMatters() {
+  return (
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden">
+      <div className="px-5 py-3 border-b border-[var(--color-border)]">
+        <p className="mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-fg-dim)]">
+          Why it matters
+        </p>
+      </div>
+      <div className="px-5 py-4 space-y-4 text-[14px] leading-relaxed text-[var(--color-fg-muted)]">
+        <p>
+          Most design tokens get accepted without evaluation. They're inherited
+          from frameworks, generated by AI, or copied from another project.
+          Each token looks fine on its own.
+        </p>
+        <p>
+          In aggregate, they produce drift. Brand colours pretending to be
+          semantic. Tokens used for six different purposes. Naming conventions
+          that disagree with themselves.
+        </p>
+        <p>This audit makes the cost visible.</p>
+      </div>
     </div>
   );
 }

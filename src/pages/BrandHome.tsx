@@ -41,6 +41,7 @@ export function BrandHome() {
         <ColorAppCard />
         <FormsAppCard />
         <TokenCostumesCard />
+        <HonestTokensCard />
       </section>
 
       {/* Writing */}
@@ -343,6 +344,85 @@ function TokenCostumesCard() {
         </p>
         <div className="flex flex-wrap gap-1.5">
           {["Costumes", "Polysemy", "Layers", "Naming"].map((t) => (
+            <span
+              key={t}
+              className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+// honest-tokens generator landing card. Demo: anchor swatch, a primitive
+// ramp strip beneath, and a one-line audit-pass caption.
+function HonestTokensCard() {
+  const anchor = "oklch(0.55 0.21 285)";
+  const ramp = [
+    "oklch(0.95 0.04 285)",
+    "oklch(0.78 0.12 285)",
+    "oklch(0.55 0.21 285)",
+    "oklch(0.38 0.18 285)",
+    "oklch(0.22 0.10 285)",
+  ];
+  return (
+    <Link
+      to="/generate"
+      className="group relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col hover:border-[#FFDD00]/60 transition shadow-[0_0_0_0_rgba(255,221,0,0)] hover:shadow-[0_0_40px_-12px_rgba(255,221,0,0.35)]"
+    >
+      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-4">
+        <div className="flex flex-col gap-2">
+          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
+            Anchor
+          </p>
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden
+              className="w-12 h-12 rounded-sm border border-[var(--color-border)]"
+              style={{ background: anchor }}
+            />
+            <code className="mono text-[11px] leading-snug text-[var(--color-fg)] bg-[var(--color-surface-2)] px-2 py-1 rounded-sm break-all">
+              {anchor}
+            </code>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
+            Primitive ramp
+          </p>
+          <div className="flex gap-1.5">
+            {ramp.map((c, i) => (
+              <span
+                key={i}
+                aria-hidden
+                className="flex-1 h-6 rounded-sm border border-[var(--color-border)]"
+                style={{ background: c }}
+              />
+            ))}
+          </div>
+        </div>
+        <p className="mono text-[10px] leading-snug text-[oklch(0.78_0.16_155)]">
+          ✓ 0 costumes detected
+        </p>
+      </div>
+      <div className="p-6">
+        <div className="flex items-baseline justify-between mb-2 gap-2">
+          <h2 className="text-[22px] font-semibold tracking-tight text-[var(--color-fg)]">
+            honest-tokens
+          </h2>
+          <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg">
+            →
+          </span>
+        </div>
+        <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-4">
+          Paste a brand colour. Get a complete three-layer token system, plus a brand contract for
+          your AI coding tools.
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {["Generate", "OKLCH", "Tailwind", "CLAUDE.md", "DTCG"].map((t) => (
             <span
               key={t}
               className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"

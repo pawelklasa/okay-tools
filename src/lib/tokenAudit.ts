@@ -8,6 +8,8 @@ export type Token = {
   name: string;
   /** Normalised CSS custom property form, e.g. "--color-primary". */
   cssName: string;
+  /** Author-written leaf key, preserved exactly (e.g. "colorBackground"). */
+  rawKey: string;
   /** Resolved value text. Aliases keep their original form. */
   value: string;
   /** True if value is `var(--x)` or `{token.path}` reference. */
@@ -68,13 +70,13 @@ const SEMANTIC_WORDS = new Set([
   "fg","foreground","text","content",
   "bg","background","surface","elevated","raised",
   "border","outline","ring","divider",
-  "positive","negative","neutral","muted","dim","subtle",
+  "positive","negative","muted","dim","subtle",
 ]);
 
 const PRIMITIVE_HUE_WORDS = new Set([
   "red","orange","amber","yellow","lime","green","emerald","teal","cyan",
   "sky","blue","indigo","violet","purple","fuchsia","pink","rose",
-  "gray","grey","slate","zinc","stone","black","white",
+  "gray","grey","slate","zinc","stone","neutral","black","white",
 ]);
 
 const COMPONENT_PREFIXES = [
@@ -131,6 +133,7 @@ function walkJson(node: unknown, path: string[], out: Token[]): void {
     out.push({
       name: path.join("."),
       cssName,
+      rawKey: path[path.length - 1] ?? "",
       value: isAlias ? `var(${aliasOf})` : raw,
       isAlias,
       aliasOf,
@@ -169,6 +172,7 @@ function parseCss(text: string): Token[] {
     out.push({
       name: cssName.replace(/^--/, "").replace(/-/g, "."),
       cssName,
+      rawKey: cssName.replace(/^--/, ""),
       value,
       isAlias: !!aliasMatch,
       aliasOf: aliasMatch?.[1],
@@ -199,6 +203,7 @@ function parseTailwind(text: string): Token[] {
     out.push({
       name: "color." + path.join("."),
       cssName,
+      rawKey: key,
       value: val,
       isAlias: false,
     });
@@ -240,7 +245,7 @@ function isComponentName(name: string): boolean {
 }
 
 function detectConvention(rawName: string): "kebab" | "camel" | "snake" | "single" {
-  const stripped = rawName.replace(/^--/, "").replace(/^color[.-]/, "");
+  const stripped = rawName.replace(/^--/, "");
   if (stripped.includes("_")) return "snake";
   if (/[a-z][A-Z]/.test(stripped)) return "camel";
   if (stripped.includes("-")) return "kebab";
@@ -317,7 +322,7 @@ export function auditTokens(tokens: Token[], format: Format, raw: string): Audit
   // ---- Naming drift ----
   const conventions = new Set<string>();
   for (const t of tokens) {
-    const c = detectConvention(t.cssName);
+    const c = detectConvention(t.rawKey);
     if (c !== "single") conventions.add(c);
   }
   let naming: NamingFinding | undefined;
@@ -325,7 +330,7 @@ export function auditTokens(tokens: Token[], format: Format, raw: string): Audit
     naming = {
       kind: "naming",
       conventions: Array.from(conventions),
-      tokens,
+      tokens: tokens.filter((t) => detectConvention(t.rawKey) !== "single"),
     };
   }
 

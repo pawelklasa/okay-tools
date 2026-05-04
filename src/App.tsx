@@ -14,6 +14,7 @@ import { DarkModeInverter } from "./pages/DarkModeInverter";
 import { FormPlayground } from "./pages/forms/Playground";
 import { Privacy } from "./pages/Privacy";
 import { TokenCostumes } from "./pages/TokenCostumes";
+import { HonestTokens } from "./pages/HonestTokens";
 
 export default function App() {
   return (
@@ -43,6 +44,9 @@ export default function App() {
 
         {/* App: token-costumes */}
         <Route path="tokens" element={<TokenCostumes />} />
+
+        {/* App: honest-tokens generator */}
+        <Route path="generate" element={<HonestTokens />} />
 
         {/* Privacy */}
         <Route path="privacy" element={<Privacy />} />
