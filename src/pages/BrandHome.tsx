@@ -251,7 +251,7 @@ function FormsAppCard() {
           </p>
           <div className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 flex items-center justify-between">
             <span className="mono text-[11px] text-[var(--color-fg)]">paw</span>
-            <span className="mono text-[10px] text-[var(--color-fg-dim)]">· still typing</span>
+            <span className="mono text-[10px] text-[oklch(0.58_0_0)]">· still typing</span>
           </div>
         </div>
       </div>
@@ -289,11 +289,11 @@ function FormsAppCard() {
 function TokenCostumesCard() {
   return (
     <div
-      className="relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col opacity-70"
+      className="relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col opacity-60"
     >
       {/* Preview: code listing with annotations — reads as a CSS snippet, not form fields */}
-      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-5">
-        <div className="flex flex-col gap-1.5">
+      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-3">
+        <div className="flex flex-col gap-1">
           <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
             Primitive in costume
           </p>
@@ -304,7 +304,18 @@ function TokenCostumesCard() {
             // used as bg, link, icon, border, text, ring
           </p>
         </div>
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1">
+          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
+            Polysemic
+          </p>
+          <code className="mono text-[11px] leading-snug text-[var(--color-fg)] bg-[var(--color-surface-2)] px-2 py-1 rounded-sm break-all">
+            --color-primary-500
+          </code>
+          <p className="mono text-[10px] leading-snug text-[var(--color-fg-dim)]">
+            // also used as --button-bg, --link, --ring
+          </p>
+        </div>
+        <div className="flex flex-col gap-1">
           <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
             Honest token
           </p>
