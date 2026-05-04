@@ -31,7 +31,7 @@ export function BrandHome() {
           Two apps. Both reveal something your design system pretends isn't broken.
         </p>
         <p className="mt-8 text-[15px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl">
-          Most design defaults - colours, validation, spacing, typography - get accepted without
+          Most design defaults — colours, validation, spacing, typography — get accepted without
           evaluation. AI tools ship them faster than ever. okay.tools makes the cost visible.
         </p>
       </section>
@@ -64,7 +64,7 @@ export function BrandHome() {
                   Why HSL was lying about lightness, and what to do about it.
                 </p>
                 <p className="mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
-                  Apr 22, 2026
+                  APR 22, 2026
                 </p>
               </div>
               <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg self-end md:self-auto">
@@ -89,7 +89,7 @@ export function BrandHome() {
                   difference.
                 </p>
                 <p className="mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
-                  May 6, 2026
+                  MAY 6, 2026
                 </p>
               </div>
               <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg self-end md:self-auto">
