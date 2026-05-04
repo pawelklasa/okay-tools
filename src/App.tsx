@@ -13,6 +13,7 @@ import { ContrastFinder } from "./pages/ContrastFinder";
 import { DarkModeInverter } from "./pages/DarkModeInverter";
 import { FormPlayground } from "./pages/forms/Playground";
 import { Privacy } from "./pages/Privacy";
+import { TokenCostumes } from "./pages/TokenCostumes";
 
 export default function App() {
   return (
@@ -39,6 +40,9 @@ export default function App() {
         <Route path="forms" element={<FormsLayout />}>
           <Route index element={<FormPlayground />} />
         </Route>
+
+        {/* App: token-costumes */}
+        <Route path="tokens" element={<TokenCostumes />} />
 
         {/* Privacy */}
         <Route path="privacy" element={<Privacy />} />
