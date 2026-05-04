@@ -30,12 +30,74 @@ export function BrandHome() {
         <p className="mt-5 text-[16px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl">
           Two apps. Both reveal something your design system pretends isn't broken.
         </p>
+        <p className="mt-8 text-[15px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl">
+          Most design defaults - colours, validation, spacing, typography - get accepted without
+          evaluation. AI tools ship them faster than ever. okay.tools makes the cost visible.
+        </p>
       </section>
 
       {/* Apps */}
       <section className="px-8 lg:px-16 pb-10 grid md:grid-cols-2 gap-5">
         <ColorAppCard />
         <FormsAppCard />
+      </section>
+
+      {/* Writing */}
+      <section className="px-8 lg:px-16 pb-12">
+        <p className="mono text-[10px] uppercase tracking-[0.18em] text-[#FFDD00] mb-3">
+          Writing
+        </p>
+
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] divide-y divide-[var(--color-border)] overflow-hidden">
+          <a
+            href="https://medium.com/design-bootcamp/color-is-finally-ok-82f368f3408c"
+            target="_blank"
+            rel="noreferrer"
+            className="group block px-5 py-6 md:px-8 md:py-6 hover:bg-[var(--color-surface)] transition-colors"
+          >
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[20px] font-semibold tracking-tight text-[var(--color-fg)] mb-2">
+                  Color is finally OK
+                </h3>
+                <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-3">
+                  Why HSL was lying about lightness, and what to do about it.
+                </p>
+                <p className="mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
+                  Apr 22, 2026
+                </p>
+              </div>
+              <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg self-end md:self-auto">
+                →
+              </span>
+            </div>
+          </a>
+
+          <a
+            href="#"
+            target="_blank"
+            rel="noreferrer"
+            className="group block px-5 py-6 md:px-8 md:py-6 hover:bg-[var(--color-surface)] transition-colors"
+          >
+            <div className="flex flex-col md:flex-row md:items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[20px] font-semibold tracking-tight text-[var(--color-fg)] mb-2">
+                  Form validation is hostile
+                </h3>
+                <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-3">
+                  Four validation strategies. Six failure modes. One playground to feel the
+                  difference.
+                </p>
+                <p className="mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
+                  May 6, 2026
+                </p>
+              </div>
+              <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg self-end md:self-auto">
+                →
+              </span>
+            </div>
+          </a>
+        </div>
       </section>
 
       {/* Email capture — full-bleed band so it can't be missed */}
