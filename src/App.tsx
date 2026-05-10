@@ -15,6 +15,7 @@ import { FormPlayground } from "./pages/forms/Playground";
 import { Privacy } from "./pages/Privacy";
 import { TokenCostumes } from "./pages/TokenCostumes";
 import { HonestTokens } from "./pages/HonestTokens";
+import { DefaultAudit } from "./pages/DefaultAudit";
 
 export default function App() {
   return (
@@ -47,6 +48,9 @@ export default function App() {
 
         {/* App: honest-tokens generator */}
         <Route path="generate" element={<HonestTokens />} />
+
+        {/* App: default-audit */}
+        <Route path="defaults" element={<DefaultAudit />} />
 
         {/* Privacy */}
         <Route path="privacy" element={<Privacy />} />

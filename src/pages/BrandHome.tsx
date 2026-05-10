@@ -42,6 +42,7 @@ export function BrandHome() {
         <FormsAppCard />
         <TokenCostumesCard />
         <HonestTokensCard />
+        <DefaultAuditCard />
       </section>
 
       {/* Writing */}
@@ -423,6 +424,71 @@ function HonestTokensCard() {
         </p>
         <div className="flex flex-wrap gap-1.5">
           {["Generate", "OKLCH", "Tailwind", "CLAUDE.md", "DTCG"].map((t) => (
+            <span
+              key={t}
+              className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+// default-audit landing card. Demo: a code snippet with detected defaults
+// highlighted, plus a tiny density meter.
+function DefaultAuditCard() {
+  return (
+    <Link
+      to="/defaults"
+      className="group relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col hover:border-[#FFDD00]/60 transition shadow-[0_0_0_0_rgba(255,221,0,0)] hover:shadow-[0_0_40px_-12px_rgba(255,221,0,0.35)]"
+    >
+      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-3">
+        <div className="flex flex-col gap-1">
+          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
+            Detected
+          </p>
+          <code className="mono text-[11px] leading-snug text-[var(--color-fg)] bg-[var(--color-surface-2)] px-2 py-1 rounded-sm break-all">
+            <span className="text-[#FFDD00]">--primary</span>: 222.2 47.4% 11.2%;
+          </code>
+          <p className="mono text-[10px] leading-snug text-[var(--color-fg-dim)]">
+            // shadcn/ui token name
+          </p>
+        </div>
+        <div className="flex flex-col gap-1">
+          <code className="mono text-[11px] leading-snug text-[var(--color-fg)] bg-[var(--color-surface-2)] px-2 py-1 rounded-sm break-all">
+            from <span className="text-[#FFDD00]">"lucide-react"</span>
+          </code>
+          <p className="mono text-[10px] leading-snug text-[var(--color-fg-dim)]">
+            // AI-era icon default
+          </p>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
+            Density 78 / 100
+          </p>
+          <div className="h-1.5 rounded-full bg-[var(--color-surface-2)] overflow-hidden">
+            <div className="h-full w-[78%] rounded-full bg-[#FFDD00]" />
+          </div>
+        </div>
+      </div>
+      <div className="p-6">
+        <div className="flex items-baseline justify-between mb-2 gap-2">
+          <h2 className="text-[22px] font-semibold tracking-tight text-[var(--color-fg)]">
+            default-audit
+          </h2>
+          <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg">
+            →
+          </span>
+        </div>
+        <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-4">
+          Paste CSS, JSX, or class names. See which AI-era defaults — shadcn,
+          Tailwind, Inter, Lucide — are in your code.
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {["shadcn", "Tailwind", "Lucide", "Inter", "Radix"].map((t) => (
             <span
               key={t}
               className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"
