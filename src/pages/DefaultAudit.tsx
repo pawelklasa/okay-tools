@@ -30,6 +30,94 @@ type FetchState =
   | { status: "ok"; url: string; bytes: number; stylesheets: number }
   | { status: "error"; url: string; message: string };
 
+interface UrlBundle {
+  url: string;
+  html: string;
+  css: string;
+  stylesheets: string[];
+}
+
+// Tries our serverless function first (works on Cloudflare Pages, Vercel,
+// and Vite dev). On GitHub Pages the function does not exist, so we fall
+// back to a public CORS proxy that returns the raw HTML, then fetch a few
+// stylesheets through the same proxy.
+async function fetchUrlBundle(url: string): Promise<UrlBundle> {
+  // 1) Try our own /api endpoint.
+  try {
+    const r = await fetch(`/api/fetch-url?url=${encodeURIComponent(url)}`);
+    const ct = r.headers.get("content-type") ?? "";
+    if (r.ok && ct.includes("application/json")) {
+      const data = await r.json();
+      if (!data.error) {
+        return {
+          url: data.url || url,
+          html: data.html ?? "",
+          css: data.css ?? "",
+          stylesheets: Array.isArray(data.stylesheets) ? data.stylesheets : [],
+        };
+      }
+    }
+  } catch {
+    // fall through to proxy
+  }
+  // 2) Fall back to a public CORS proxy.
+  return fetchUrlViaProxy(url);
+}
+
+async function fetchUrlViaProxy(target: string): Promise<UrlBundle> {
+  // Try a list of public CORS proxies. First one that returns 2xx wins.
+  const proxies: ((u: string) => string)[] = [
+    (u) => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(u)}`,
+    (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+    (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  ];
+  async function viaProxy(u: string): Promise<string> {
+    let lastError: unknown = null;
+    for (const build of proxies) {
+      try {
+        const r = await fetch(build(u));
+        if (r.ok) return await r.text();
+        lastError = new Error(`proxy ${r.status}`);
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    throw lastError instanceof Error ? lastError : new Error("all proxies failed");
+  }
+  const raw = await viaProxy(target);
+  const html = raw.slice(0, 1_500_000);
+  const linkRe = /<link\b[^>]*\brel\s*=\s*["']?stylesheet["']?[^>]*>/gi;
+  const hrefRe = /\bhref\s*=\s*["']([^"']+)["']/i;
+  const hrefs: string[] = [];
+  const matches = html.match(linkRe) ?? [];
+  for (const tag of matches) {
+    const h = tag.match(hrefRe)?.[1];
+    if (!h) continue;
+    try {
+      hrefs.push(new URL(h, target).toString());
+    } catch {
+      /* skip malformed href */
+    }
+    if (hrefs.length >= 5) break;
+  }
+  const cssChunks = await Promise.all(
+    hrefs.map(async (u) => {
+      try {
+        const t = await viaProxy(u);
+        return t.slice(0, 300_000);
+      } catch {
+        return "";
+      }
+    })
+  );
+  return {
+    url: target,
+    html,
+    css: cssChunks.filter(Boolean).join("\n\n/* --- */\n\n"),
+    stylesheets: hrefs,
+  };
+}
+
 export function DefaultAudit() {
   const [mode, setMode] = useState<InputMode>("url");
   const [text, setText] = useState("");
@@ -79,16 +167,7 @@ export function DefaultAudit() {
     setFetchState({ status: "loading", url });
     setText("");
     try {
-      const r = await fetch(`/api/fetch-url?url=${encodeURIComponent(url)}`);
-      const data = await r.json();
-      if (!r.ok || data.error) {
-        setFetchState({
-          status: "error",
-          url,
-          message: data.error || `request failed (${r.status})`,
-        });
-        return;
-      }
+      const data = await fetchUrlBundle(url);
       const blob = `${data.html ?? ""}\n\n${data.css ?? ""}`;
       setText(blob);
       setFetchState({
