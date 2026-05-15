@@ -16,6 +16,7 @@ import { Privacy } from "./pages/Privacy";
 import { TokenCostumes } from "./pages/TokenCostumes";
 import { HonestTokens } from "./pages/HonestTokens";
 import { DefaultAudit } from "./pages/DefaultAudit";
+import { Preflight } from "./pages/Preflight";
 
 export default function App() {
   return (
@@ -51,6 +52,9 @@ export default function App() {
 
         {/* App: default-audit */}
         <Route path="defaults" element={<DefaultAudit />} />
+
+        {/* App: preflight checklists */}
+        <Route path="preflight" element={<Preflight />} />
 
         {/* Privacy */}
         <Route path="privacy" element={<Privacy />} />

@@ -43,6 +43,7 @@ export function BrandHome() {
         <TokenCostumesCard />
         <HonestTokensCard />
         <DefaultAuditCard />
+        <PreflightCard />
       </section>
 
       {/* Writing */}
@@ -439,6 +440,49 @@ function HonestTokensCard() {
 
 // default-audit landing card. Demo: a code snippet with detected defaults
 // highlighted, plus a tiny density meter.
+function PreflightCard() {
+  const checklists = [
+    { name: "Pre-deploy", count: 9 },
+    { name: "Pre-review", count: 8 },
+    { name: "Pre-incident response", count: 8 },
+    { name: "Pre-launch", count: 9 },
+  ];
+  return (
+    <Link
+      to="/preflight"
+      className="group relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col hover:border-[var(--color-border-strong)] transition"
+    >
+      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-1.5">
+        {checklists.map((cl) => (
+          <div key={cl.name} className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded-sm border border-[var(--color-border-strong)] flex items-center justify-center flex-shrink-0">
+              <svg width="8" height="7" viewBox="0 0 8 7" fill="none">
+                <path d="M1 3.5L3 5.5L7 1" stroke="var(--color-ok)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <span className="mono text-[11px] text-[var(--color-fg-muted)] flex-1">{cl.name}</span>
+            <span className="mono text-[10px] text-[var(--color-fg-dim)]">{cl.count}</span>
+          </div>
+        ))}
+      </div>
+      <div className="p-6">
+        <div className="flex items-baseline justify-between mb-2 gap-2">
+          <h2 className="text-[22px] font-semibold tracking-tight text-[var(--color-fg)]">
+            preflight
+          </h2>
+          <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg">
+            →
+          </span>
+        </div>
+        <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)]">
+          Aviation-style pre-flight checklists for software work. Walk through
+          the items you cannot skip.
+        </p>
+      </div>
+    </Link>
+  );
+}
+
 function DefaultAuditCard() {
   return (
     <Link
