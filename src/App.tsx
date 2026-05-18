@@ -17,6 +17,7 @@ import { TokenCostumes } from "./pages/TokenCostumes";
 import { HonestTokens } from "./pages/HonestTokens";
 import { DefaultAudit } from "./pages/DefaultAudit";
 import { Preflight } from "./pages/Preflight";
+import { CoffeeButton } from "./components/CoffeeButton";
 
 export default function App() {
   return (
@@ -70,6 +71,7 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <CoffeeButton />
     </HashRouter>
   );
 }

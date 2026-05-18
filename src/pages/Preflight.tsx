@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { Link } from "react-router-dom";
 
 // ---------------------------------------------------------------------------
 // Data
@@ -482,13 +483,13 @@ function IndexView({ onSelect }: IndexViewProps) {
               "conic-gradient(from 0deg, oklch(0.72 0.18 30), oklch(0.72 0.18 110), oklch(0.72 0.18 200), oklch(0.72 0.18 290), oklch(0.72 0.18 30))",
           }}
         />
-        <a
-          href="/#"
+        <Link
+          to="/"
           className="font-semibold tracking-tight text-[15px] hover:opacity-80 transition no-underline"
           style={{ textDecoration: "none", color: "inherit" }}
         >
           okay<span className="text-[var(--color-fg-dim)]">.tools</span>
-        </a>
+        </Link>
       </header>
 
       {/* Intro */}
