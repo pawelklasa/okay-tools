@@ -17,6 +17,8 @@ import { TokenCostumes } from "./pages/TokenCostumes";
 import { HonestTokens } from "./pages/HonestTokens";
 import { DefaultAudit } from "./pages/DefaultAudit";
 import { Preflight } from "./pages/Preflight";
+import { Skills } from "./pages/Skills";
+import { SkillDetail } from "./pages/SkillDetail";
 import { CoffeeButton } from "./components/CoffeeButton";
 
 export default function App() {
@@ -56,6 +58,10 @@ export default function App() {
 
         {/* App: preflight checklists */}
         <Route path="preflight" element={<Preflight />} />
+
+        {/* Skills hub */}
+        <Route path="skills" element={<Skills />} />
+        <Route path="skills/:slug" element={<SkillDetail />} />
 
         {/* Privacy */}
         <Route path="privacy" element={<Privacy />} />
