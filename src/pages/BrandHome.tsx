@@ -44,6 +44,7 @@ export function BrandHome() {
         <HonestTokensCard />
         <DefaultAuditCard />
         <PreflightCard />
+        <SkillsCard />
       </section>
 
       {/* Writing */}
@@ -533,6 +534,68 @@ function DefaultAuditCard() {
         </p>
         <div className="flex flex-wrap gap-1.5">
           {["shadcn", "Tailwind", "Lucide", "Inter", "Radix"].map((t) => (
+            <span
+              key={t}
+              className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function SkillsCard() {
+  return (
+    <Link
+      to="/skills"
+      className="group relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col hover:border-[var(--color-border-strong)] transition"
+    >
+      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-2.5">
+        <div className="flex items-center gap-2">
+          <span className="mono text-[9.5px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
+            SKILL.md
+          </span>
+          <span className="mono text-[9px] px-1.5 py-0.5 rounded bg-[var(--color-surface-2)] text-[var(--color-accent-400)]">
+            MIT
+          </span>
+        </div>
+        <code className="mono text-[11px] leading-snug text-[var(--color-fg)] bg-[var(--color-surface-2)] px-2 py-1.5 rounded-sm break-all">
+          <span className="text-[var(--color-fg-dim)]"># </span>
+          production-design
+        </code>
+        <div className="flex flex-col gap-1 mt-1">
+          <div className="flex items-center gap-2">
+            <span className="w-1 h-1 rounded-full bg-[var(--color-accent-400)]" />
+            <span className="mono text-[10px] text-[var(--color-fg-muted)]">constraints first</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-1 h-1 rounded-full bg-[var(--color-accent-400)]" />
+            <span className="mono text-[10px] text-[var(--color-fg-muted)]">WCAG 2.2 AA floor</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-1 h-1 rounded-full bg-[var(--color-accent-400)]" />
+            <span className="mono text-[10px] text-[var(--color-fg-muted)]">named trade-offs</span>
+          </div>
+        </div>
+      </div>
+      <div className="p-6">
+        <div className="flex items-baseline justify-between mb-2 gap-2">
+          <h2 className="text-[22px] font-semibold tracking-tight text-[var(--color-fg)]">
+            skills
+          </h2>
+          <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg">
+            →
+          </span>
+        </div>
+        <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-4">
+          Claude Code skills for production software. An alternative to Anthropic's
+          frontend-design skill, built on constraints and accessibility.
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {["Claude Code", "Accessibility", "Production"].map((t) => (
             <span
               key={t}
               className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"
