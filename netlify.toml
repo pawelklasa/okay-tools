@@ -1,0 +1,20 @@
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Map the friendly /api/drift-scan path to the Netlify function name.
+[[redirects]]
+  from = "/api/drift-scan"
+  to = "/.netlify/functions/drift-scan"
+  status = 200
+  force = true
+
+# Same shape as the existing /api/fetch-url so SPA history works as before.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

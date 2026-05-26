@@ -1,0 +1,19 @@
+{
+  "name": "@okay-tools/drift-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Transparent design-system drift measurement engine. Shared by the okay-drift CLI and the okay.tools /drift web UI.",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js"
+    }
+  },
+  "files": ["src", "README.md"],
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}

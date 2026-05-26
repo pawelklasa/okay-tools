@@ -186,6 +186,7 @@ function ToolGrid() {
         Tools
       </h2>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <DriftCard />
         <HslLiesCard />
         <MigratorCard />
         <PaletteCard />
@@ -478,8 +479,44 @@ function GradientCard() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Footer
+function DriftCard() {
+  // Mini breakdown table preview — counts vs. baseline range, two over.
+  const rows: Array<{ label: string; count: number; min: number; max: number }> = [
+    { label: "Text colours", count: 5, min: 3, max: 8 },
+    { label: "Font sizes", count: 11, min: 4, max: 8 },
+    { label: "Spacing values", count: 22, min: 6, max: 16 },
+    { label: "Border radii", count: 4, min: 2, max: 5 },
+  ];
+  return (
+    <CardShell
+      to="/drift"
+      title="Drift Score"
+      blurb="Count distinct used values against published baselines. Paste CSS, scan a URL, or run the CLI."
+      preview={
+        <div className="px-5 py-4 w-full flex flex-col gap-1.5 justify-center">
+          {rows.map((r) => {
+            const over = r.count > r.max;
+            return (
+              <div key={r.label} className="flex items-center gap-3 text-[11px]">
+                <span className="text-[var(--color-fg-muted)] flex-1 truncate">{r.label}</span>
+                <span className="mono text-[var(--color-fg)] tabular-nums w-6 text-right">{r.count}</span>
+                <span className="mono text-[var(--color-fg-dim)] tabular-nums w-10 text-right">{r.min}–{r.max}</span>
+                <span
+                  className={`mono tabular-nums w-10 text-right ${
+                    over ? "text-[var(--color-err)]" : "text-[var(--color-ok)]"
+                  }`}
+                >
+                  {over ? `+${r.count - r.max}` : "ok"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      }
+    />
+  );
+}
+
 // ---------------------------------------------------------------------------
 
 function Footer() {

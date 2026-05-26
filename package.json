@@ -3,11 +3,16 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "bin": {
+    "okay-drift": "./packages/drift-cli/bin/okay-drift.mjs"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "drift": "node packages/drift-cli/bin/okay-drift.mjs",
+    "test": "node --test packages/drift-engine/test/*.test.js"
   },
   "dependencies": {
     "culori": "^4.0.2",
@@ -27,6 +32,8 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
+    "playwright": "^1.60.0",
+    "playwright-core": "^1.60.0",
     "tailwindcss": "^4.2.4",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",

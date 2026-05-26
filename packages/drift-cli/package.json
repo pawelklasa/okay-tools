@@ -1,0 +1,17 @@
+{
+  "name": "okay-drift",
+  "version": "0.1.0",
+  "description": "Measure design-system drift in any codebase. Transparent, defensible counts against published baselines.",
+  "type": "module",
+  "bin": {
+    "okay-drift": "./bin/okay-drift.mjs"
+  },
+  "files": [
+    "bin",
+    "../drift-engine/src",
+    "README.md"
+  ],
+  "keywords": ["design-system", "drift", "tokens", "audit", "css"],
+  "engines": { "node": ">=18.18" },
+  "license": "MIT"
+}

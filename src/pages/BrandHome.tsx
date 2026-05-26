@@ -38,6 +38,7 @@ export function BrandHome() {
 
       {/* Apps */}
       <section className="px-8 lg:px-16 pb-10 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <DriftCard />
         <ColorAppCard />
         <FormsAppCard />
         <TokenCostumesCard />
@@ -534,6 +535,70 @@ function DefaultAuditCard() {
         </p>
         <div className="flex flex-wrap gap-1.5">
           {["shadcn", "Tailwind", "Lucide", "Inter", "Radix"].map((t) => (
+            <span
+              key={t}
+              className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function DriftCard() {
+  // Mini preview: 8 near-identical greys side by side — the headline visual.
+  const greys = ["#2a2a2e", "#2b2b2f", "#2c2c30", "#2e2e32", "#303034", "#323236", "#343438", "#36363a"];
+  return (
+    <Link
+      to="/drift"
+      className="group relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col hover:border-[var(--color-accent-500)]/60 transition shadow-[0_0_0_0_rgba(94,195,255,0)] hover:shadow-[0_0_40px_-12px_rgba(94,195,255,0.35)]"
+    >
+      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-3">
+        <div>
+          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)] mb-1.5">
+            8 distinct greys
+          </p>
+          <div className="grid h-9 rounded overflow-hidden border border-[var(--color-border)]" style={{ gridTemplateColumns: `repeat(${greys.length}, 1fr)` }}>
+            {greys.map((g) => <div key={g} style={{ background: g }} />)}
+          </div>
+          <p className="mono text-[10px] text-[var(--color-fg-dim)] mt-1.5">ΔE &lt; 0.02 — you cannot tell these apart</p>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded bg-[var(--color-surface-2)] p-2">
+            <p className="mono text-[9px] uppercase text-[var(--color-fg-dim)]">spacing</p>
+            <p className="text-[18px] font-semibold">23</p>
+            <p className="mono text-[9px] text-[var(--color-err)]">+7</p>
+          </div>
+          <div className="rounded bg-[var(--color-surface-2)] p-2">
+            <p className="mono text-[9px] uppercase text-[var(--color-fg-dim)]">fonts</p>
+            <p className="text-[18px] font-semibold">5</p>
+            <p className="mono text-[9px] text-[var(--color-err)]">+2</p>
+          </div>
+          <div className="rounded bg-[var(--color-surface-2)] p-2">
+            <p className="mono text-[9px] uppercase text-[var(--color-fg-dim)]">shadows</p>
+            <p className="text-[18px] font-semibold">9</p>
+            <p className="mono text-[9px] text-[var(--color-err)]">+3</p>
+          </div>
+        </div>
+      </div>
+      <div className="p-6">
+        <div className="flex items-baseline justify-between mb-2 gap-2">
+          <h2 className="text-[22px] font-semibold tracking-tight text-[var(--color-fg)]">
+            Drift Score
+          </h2>
+          <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg">
+            →
+          </span>
+        </div>
+        <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-4">
+          Count the distinct used values in your design system. CLI, paste, or live URL —
+          one transparent number against published baselines.
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {["npx okay-drift", "Paste CSS", "Live URL", "OKLCH ΔE"].map((t) => (
             <span
               key={t}
               className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"
