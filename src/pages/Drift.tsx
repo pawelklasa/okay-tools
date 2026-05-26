@@ -165,8 +165,21 @@ function UrlMode(props: {
   setRunning: (b: boolean) => void;
 }) {
   const [url, setUrl] = useState("");
+  // GitHub Pages and other static hosts can't run the /api/drift-scan
+  // function. Detect and surface a clear message instead of letting fetch()
+  // hit a 404 HTML page that fails JSON.parse with a cryptic error.
+  const isStaticHost =
+    typeof window !== "undefined" &&
+    (window.location.hostname.endsWith(".github.io") ||
+      import.meta.env.BASE_URL === "/okay-tools/");
   const run = async () => {
     if (!url.trim()) { props.onError("Enter a URL."); return; }
+    if (isStaticHost) {
+      props.onError(
+        "Live URL scan needs a server-side runtime. This deploy is on GitHub Pages (static hosting). Use Paste CSS, or run the CLI: `okay-drift --json > drift.json` and import the file under Repo / Folder."
+      );
+      return;
+    }
     props.setRunning(true);
     try {
       const r = await fetch("/api/drift-scan", {
@@ -174,6 +187,13 @@ function UrlMode(props: {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ url, tolerance: props.tolerance }),
       });
+      const ct = r.headers.get("content-type") || "";
+      if (!ct.includes("application/json")) {
+        props.onError(
+          `Scan endpoint returned ${r.status} ${ct || "unknown content-type"}. This usually means the deploy doesn't run the /api/drift-scan function. Use Paste CSS or the CLI instead.`
+        );
+        return;
+      }
       const data = await r.json();
       if (!r.ok) {
         props.onError(data.error || `Scan failed (${r.status}).`);
@@ -188,21 +208,24 @@ function UrlMode(props: {
   };
   return (
     <Card>
-      <Field label="Live URL" hint="https only, public hosts">
+      <Field label="Live URL" hint={isStaticHost ? "static host — use Paste / CLI" : "https only, public hosts"}>
         <input
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://example.com"
           autoComplete="off"
+          disabled={isStaticHost}
         />
       </Field>
       <p className="mt-2 text-[12px] text-[var(--color-fg-dim)]">
-        We render the page in a headless browser, read computed styles, and discard the URL. Rate-limited. Third-party iframes are listed but not counted.
+        {isStaticHost
+          ? "This deploy is on GitHub Pages and can't run the headless-browser scan. The Paste CSS tab and the CLI work everywhere."
+          : "We render the page in a headless browser, read computed styles, and discard the URL. Rate-limited. Third-party iframes are listed but not counted."}
       </p>
       <div className="mt-3 flex flex-wrap items-center gap-3 justify-between">
         <ToleranceControl value={props.tolerance} onChange={props.setTolerance} />
-        <Button variant="primary" onClick={run}>
+        <Button variant="primary" onClick={run} disabled={isStaticHost}>
           {props.running ? "Scanning…" : "Scan URL"}
         </Button>
       </div>
