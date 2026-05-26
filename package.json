@@ -15,7 +15,9 @@
     "test": "node --test packages/drift-engine/test/*.test.js"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^148.0.0",
     "culori": "^4.0.2",
+    "playwright-core": "^1.60.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.14.2"
@@ -33,7 +35,6 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
     "playwright": "^1.60.0",
-    "playwright-core": "^1.60.0",
     "tailwindcss": "^4.2.4",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",

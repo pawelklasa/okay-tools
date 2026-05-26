@@ -11,6 +11,15 @@ import { ResultPanel } from "../components/drift/ResultPanel";
 
 type Mode = "paste" | "url" | "repo";
 
+// Live URL scan needs a server-side runtime (Netlify function or local Vite
+// middleware). On static hosts like GitHub Pages there is no such runtime, so
+// we hide the tab entirely instead of showing a disabled one. Paste CSS and
+// the CLI work everywhere.
+const SUPPORTS_LIVE_URL =
+  typeof window !== "undefined" &&
+  !window.location.hostname.endsWith(".github.io") &&
+  import.meta.env.BASE_URL !== "/okay-tools/";
+
 export function Drift() {
   const [mode, setMode] = useState<Mode>("paste");
   const [report, setReport] = useState<DriftReport | null>(null);
@@ -44,7 +53,9 @@ export function Drift() {
       <section className="px-8 lg:px-16 pb-6 max-w-5xl">
         <div className="flex flex-wrap gap-1.5 mb-4">
           <ModeTab active={mode === "paste"} onClick={() => setMode("paste")}>Paste CSS</ModeTab>
-          <ModeTab active={mode === "url"} onClick={() => setMode("url")}>Live URL</ModeTab>
+          {SUPPORTS_LIVE_URL && (
+            <ModeTab active={mode === "url"} onClick={() => setMode("url")}>Live URL</ModeTab>
+          )}
           <ModeTab active={mode === "repo"} onClick={() => setMode("repo")}>Repo / Folder (CLI)</ModeTab>
         </div>
 

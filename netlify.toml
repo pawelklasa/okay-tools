@@ -5,6 +5,16 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+  # Don't bundle the headless-browser stack — let Netlify ship them as plain
+  # node_modules so playwright-core's dynamic requires and @sparticuz/chromium's
+  # binary resolver both work at runtime.
+  external_node_modules = ["playwright-core", "@sparticuz/chromium"]
+
+[functions."drift-scan"]
+  # Headless Chromium cold-starts are slow and pages can take ~5–10s to settle.
+  timeout = 26
+  # Bundle in the engine source so the function can import it at runtime.
+  included_files = ["packages/drift-engine/**"]
 
 # Map the friendly /api/drift-scan path to the Netlify function name.
 [[redirects]]

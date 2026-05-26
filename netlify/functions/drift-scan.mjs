@@ -15,12 +15,35 @@ import { score, CATEGORIES, CATEGORY_ORDER } from "../../packages/drift-engine/s
 
 // Lazy import so cold-start TS-check stays fast and so this file is loadable
 // in environments without Playwright (the engine itself has no playwright dep).
-let chromiumPromise = null;
-async function getChromium() {
-  if (!chromiumPromise) {
-    chromiumPromise = import("playwright-core").then((m) => m.chromium);
+// On AWS Lambda (which Netlify Functions runs on) we use @sparticuz/chromium
+// to provide a Lambda-compatible Chromium binary; locally we let playwright-core
+// resolve its own browser.
+let launcherPromise = null;
+async function getLauncher() {
+  if (!launcherPromise) {
+    launcherPromise = (async () => {
+      const { chromium } = await import("playwright-core");
+      const onLambda = !!process.env.AWS_LAMBDA_FUNCTION_NAME || !!process.env.LAMBDA_TASK_ROOT;
+      if (onLambda) {
+        const mod = await import("@sparticuz/chromium");
+        const chromiumPkg = mod.default ?? mod;
+        const executablePath = await chromiumPkg.executablePath();
+        return {
+          launch: () =>
+            chromium.launch({
+              args: chromiumPkg.args,
+              executablePath,
+              headless: true,
+            }),
+        };
+      }
+      return {
+        launch: () =>
+          chromium.launch({ args: ["--no-sandbox", "--disable-setuid-sandbox"] }),
+      };
+    })();
   }
-  return chromiumPromise;
+  return launcherPromise;
 }
 
 const RATE_BUCKET = new Map(); // ip -> { count, resetAt }
@@ -76,17 +99,15 @@ export const handler = async (event) => {
 
   const tolerance = typeof body.tolerance === "number" ? body.tolerance : undefined;
 
-  let chromium;
-  try { chromium = await getChromium(); }
+  let launcher;
+  try { launcher = await getLauncher(); }
   catch (e) {
     return json(500, { error: "Headless browser unavailable in this environment. Use paste or CLI mode." });
   }
 
   let browser;
   try {
-    browser = await chromium.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+    browser = await launcher.launch();
     const ctx = await browser.newContext({
       viewport: { width: 1280, height: 800 },
       userAgent: "okay-drift/0.1 (+https://okay.tools)",
