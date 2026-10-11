@@ -1,15 +1,16 @@
 import { useState, useId } from "react";
 import { Link } from "react-router-dom";
 
-// Buttondown account username (https://buttondown.com/<username>).
-const BUTTONDOWN_USERNAME = "pav";
-const ENDPOINT = `https://buttondown.com/api/emails/embed-subscribe/${BUTTONDOWN_USERNAME}`;
+// Server-side endpoint (Netlify function) that talks to Buttondown via API.
+// Local dev: vite serves the SPA; this endpoint only exists on the deployed
+// site (or under `netlify dev`). We surface a clear error if it's missing.
+const ENDPOINT = "/api/subscribe";
 
 type State = "idle" | "submitting" | "success" | "error";
 
 export function EmailCapture({
   prompt,
-  source: _source,
+  source,
   className = "",
   hideHeading = false,
 }: {
@@ -24,35 +25,61 @@ export function EmailCapture({
   const [state, setState] = useState<State>("idle");
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const inputId = useId();
-  const iframeName = "bd_" + useId().replace(/[^a-zA-Z0-9]/g, "");
 
   const valid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 
-  // Submission strategy: native <form action method target=hidden-iframe>
-  // POST. We only intercept submit to validate; if valid, we let the
-  // browser submit normally to the iframe and flip UI to success right
-  // away — the request is already in flight by then, and waiting on the
-  // iframe load adds ~2s of unnecessary perceived latency.
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setErrMsg(null);
 
     if (honeypot) {
-      e.preventDefault();
+      // Pretend success; never hit the wire.
       setState("success");
       return;
     }
 
     if (!valid) {
-      e.preventDefault();
       setErrMsg("That doesn't look like an email.");
       setState("error");
       return;
     }
 
-    // Don't preventDefault — let the browser submit to the iframe.
-    // Optimistic success: the POST has been dispatched by the time React
-    // returns from this handler.
-    setState("success");
+    setState("submitting");
+
+    try {
+      const res = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, source, website: honeypot }),
+      });
+
+      if (res.ok) {
+        setState("success");
+        return;
+      }
+
+      let detail: { error?: string } | null = null;
+      try {
+        detail = await res.json();
+      } catch {
+        // non-JSON response
+      }
+
+      const code = detail?.error || "unknown";
+      const msg =
+        code === "invalid_email"
+          ? "That doesn't look like an email."
+          : code === "rate_limited"
+            ? "Too many attempts. Try again in a few minutes."
+            : code === "server_misconfigured"
+              ? "Server is missing its subscribe key. Try again later."
+              : "Couldn't subscribe. Try again in a moment.";
+      setErrMsg(msg);
+      setState("error");
+    } catch {
+      setErrMsg("Network error. Check your connection and try again.");
+      setState("error");
+    }
   };
 
   if (state === "success") {
@@ -70,14 +97,7 @@ export function EmailCapture({
   // form (no surrounding card chrome, no prompt paragraph).
   if (hideHeading) {
     return (
-      <form
-        onSubmit={onSubmit}
-        action={ENDPOINT}
-        method="post"
-        target={iframeName}
-        noValidate
-        className={`relative ${className}`}
-      >
+      <form onSubmit={onSubmit} noValidate className={`relative ${className}`}>
         <label
           htmlFor={inputId}
           className="mono text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-dim)] block mb-1.5"
@@ -141,15 +161,6 @@ export function EmailCapture({
           </Link>
           .
         </p>
-        {/* Hidden iframe receives Buttondown's HTML response so the page
-            doesn't navigate away on submit. */}
-        <iframe
-          name={iframeName}
-          title="subscribe"
-          aria-hidden="true"
-          tabIndex={-1}
-          style={{ display: "none" }}
-        />
       </form>
     );
   }
@@ -157,9 +168,6 @@ export function EmailCapture({
   return (
     <form
       onSubmit={onSubmit}
-      action={ENDPOINT}
-      method="post"
-      target={iframeName}
       noValidate
       className={`rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 ${className}`}
     >
@@ -229,13 +237,6 @@ export function EmailCapture({
         </Link>
         .
       </p>
-      <iframe
-        name={iframeName}
-        title="subscribe"
-        aria-hidden="true"
-        tabIndex={-1}
-        style={{ display: "none" }}
-      />
     </form>
   );
 }

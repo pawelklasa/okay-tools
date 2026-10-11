@@ -23,6 +23,13 @@
   status = 200
   force = true
 
+# Email subscription via Buttondown API (bypasses captcha + double opt-in).
+[[redirects]]
+  from = "/api/subscribe"
+  to = "/.netlify/functions/subscribe"
+  status = 200
+  force = true
+
 # Same shape as the existing /api/fetch-url so SPA history works as before.
 [[redirects]]
   from = "/*"

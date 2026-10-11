@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-08",
+  "scanned": 2118,
+  "kept": 2,
+  "sources": [
+    "Josh W. Comeau",
+    "Paco Coursey",
+    "Maggie Appleton",
+    "Frontend Focus",
+    "Piccalilli",
+    "Ahmad Shadeed",
+    "Chrome for Developers",
+    "web.dev",
+    "Brad Frost",
+    "EightShapes (Nathan Curtis)",
+    "Smashing Magazine",
+    "Julie Zhuo",
+    "NN/g",
+    "Linear changelog",
+    "Vercel changelog",
+    "Supabase changelog",
+    "Simon Willison",
+    "Hacker News (front page)"
+  ],
+  "items": [
+    {
+      "rank": 1,
+      "title": "Shipping JPEG XL in Chrome",
+      "url": "https://developer.chrome.com/blog/jpeg-xl-in-chrome",
+      "source": "Hacker News (front page)",
+      "publishedAt": "2026-10-07T11:25:02.000Z",
+      "score": 75,
+      "summary": "Chrome ships JPEG XL image format support; web platform capability expansion.",
+      "tags": [
+        "CSS",
+        "Tooling"
+      ],
+      "why": "Web platform advancement; directly relevant to frontend engineering decisions."
+    },
+    {
+      "rank": 2,
+      "title": "Animated ASCII Art for Web Pages",
+      "url": "https://ascii.rest/",
+      "source": "Hacker News (front page)",
+      "publishedAt": "2026-10-07T15:05:37.000Z",
+      "score": 60,
+      "summary": "Animated ASCII art tool for web pages; demonstrates creative CSS and web platform capabilities.",
+      "tags": [
+        "CSS",
+        "Craft",
+        "Motion"
+      ],
+      "why": "Web platform craft; shows creative interaction and animation techniques."
+    }
+  ]
+}

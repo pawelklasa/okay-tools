@@ -1,0 +1,75 @@
+name: Daily design-engineering digest
+
+on:
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: daily-signal
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run signal:test
+      - name: Score and publish today's digest
+        run: npm run signal:build
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          ANTHROPIC_WORKSPACE_ID: ${{ vars.ANTHROPIC_WORKSPACE_ID }}
+      - run: npm run build
+      - name: Commit generated digest
+        id: commit
+        run: |
+          git add data/signal
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Publish daily design-engineering digest'
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      - name: Dispatch existing Pages deployment
+        if: steps.commit.outputs.changed == 'true'
+        run: gh workflow run deploy.yml --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Trigger Netlify build hook when configured
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          NETLIFY_BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+        run: |
+          node --input-type=module <<'NODE'
+          const hook = process.env.NETLIFY_BUILD_HOOK;
+          if (!hook) {
+            console.log('No Netlify hook configured; connected Git deployment handles the push.');
+          } else {
+            try {
+              const response = await fetch(hook, { method: 'POST', signal: AbortSignal.timeout(10000) });
+              if (!response.ok) throw new Error('Deploy request rejected');
+              console.log('Netlify rebuild requested.');
+            } catch {
+              console.error('Netlify build hook failed; check the secret and deployment logs.');
+              process.exitCode = 1;
+            }
+          }
+          NODE

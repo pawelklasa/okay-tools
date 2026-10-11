@@ -8,21 +8,29 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "node scripts/signal/assets.mjs && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "drift": "node packages/drift-cli/bin/okay-drift.mjs",
-    "test": "node --test packages/drift-engine/test/*.test.js"
+    "test": "node --test packages/drift-engine/test/*.test.js tests/signal/*.test.mjs",
+    "signal:build": "node scripts/signal/build.mjs",
+    "signal:assets": "node scripts/signal/assets.mjs",
+    "signal:test": "node --test tests/signal/*.test.mjs",
+    "signal:test:ui": "node tests/signal-ui.mjs"
   },
   "dependencies": {
     "@sparticuz/chromium": "^148.0.0",
+    "cheerio": "^1.2.0",
     "culori": "^4.0.2",
     "playwright-core": "^1.60.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-router-dom": "^7.14.2"
+    "react-router-dom": "^7.14.2",
+    "rss-parser": "^3.13.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.2.4",
     "@types/culori": "^4.0.1",
@@ -34,10 +42,12 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
+    "lighthouse": "^13.5.0",
     "playwright": "^1.60.0",
     "tailwindcss": "^4.2.4",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
-    "vite": "^8.0.10"
+    "vite": "^8.0.10",
+    "yaml": "^2.9.1"
   }
 }

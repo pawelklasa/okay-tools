@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { BrandLayout } from "./components/BrandLayout";
 import { ColorLayout } from "./components/ColorLayout";
 import { FormsLayout } from "./components/FormsLayout";
@@ -21,8 +21,28 @@ import { Skills } from "./pages/Skills";
 import { SkillDetail } from "./pages/SkillDetail";
 import { Drift } from "./pages/Drift";
 import { CoffeeButton } from "./components/CoffeeButton";
+import { SubscribeButton } from "./components/SubscribeButton";
+import { Signal } from "./pages/Signal";
+import { signalPath } from "./lib/signal";
 
 export default function App() {
+  const basename = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const pathname = window.location.pathname.slice(basename.length);
+  if (pathname === signalPath || pathname.startsWith(`${signalPath}/`)) {
+    return (
+      <BrowserRouter basename={basename || "/"}>
+        <Routes>
+          <Route path={signalPath} element={<Signal />} />
+          <Route path={`${signalPath}/archive`} element={<Signal />} />
+          <Route path={`${signalPath}/:date`} element={<Signal />} />
+        </Routes>
+        <div className="fixed top-4 right-4 md:top-5 md:right-6 z-40 flex items-center gap-2">
+          <SubscribeButton />
+          <CoffeeButton />
+        </div>
+      </BrowserRouter>
+    );
+  }
   return (
     <HashRouter>
       <Routes>
@@ -81,7 +101,16 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <CoffeeButton />
+      <ToolActions />
     </HashRouter>
   );
+}
+
+function ToolActions() {
+  const { pathname } = useLocation();
+  if (pathname === "/") return null;
+  return <div className="fixed top-4 right-4 md:top-5 md:right-6 z-40 flex items-center gap-2">
+    <SubscribeButton />
+    <CoffeeButton />
+  </div>;
 }

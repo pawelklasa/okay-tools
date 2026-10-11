@@ -1,0 +1,10 @@
+{
+  "name": "signal",
+  "path": "/signal",
+  "siteUrl": "https://okay.tools",
+  "contactUrl": "https://github.com/pawelklasa/okay-tools/issues/new?title=Source%20removal",
+  "model": "claude-haiku-4-5-20251001",
+  "workspaceId": "wrkspc_01M14DRo9ogSFgjQzXwKQu83",
+  "readerProfile": "A senior product designer who writes production front-end code. Cares about: design systems and tokens, CSS and the web platform, interaction and motion craft, accessibility, colour and typography, design-engineering tooling, and how AI is changing building UI. Does not care about: generic career advice, listicles, beginner tutorials, marketing, product launches without substance, or pure back-end topics.",
+  "tags": ["CSS", "Design systems", "Tokens", "Motion", "A11y", "Typography", "Colour", "React", "Tooling", "AI", "Craft", "Product"]
+}

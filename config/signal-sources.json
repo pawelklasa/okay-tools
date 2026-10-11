@@ -1,0 +1,122 @@
+[
+  {
+    "name": "Josh W. Comeau",
+    "site": "https://www.joshwcomeau.com/",
+    "feed": "https://www.joshwcomeau.com/rss.xml",
+    "weight": 1
+  },
+  {
+    "name": "Emil Kowalski",
+    "site": "https://emilkowal.ski/",
+    "feed": null,
+    "weight": 1
+  },
+  {
+    "name": "Rauno Freiberg",
+    "site": "https://rauno.me/",
+    "feed": null,
+    "weight": 1
+  },
+  {
+    "name": "Paco Coursey",
+    "site": "https://paco.me/",
+    "feed": "https://paco.me/feed.xml",
+    "weight": 1
+  },
+  {
+    "name": "Maggie Appleton",
+    "site": "https://maggieappleton.com/",
+    "feed": "https://maggieappleton.com/rss.xml",
+    "weight": 1
+  },
+  {
+    "name": "Frontend Focus",
+    "site": "https://frontendfoc.us/",
+    "feed": "https://frontendfoc.us/rss/",
+    "weight": 1
+  },
+  {
+    "name": "Piccalilli",
+    "site": "https://piccalil.li/",
+    "feed": "https://piccalil.li/feed.xml",
+    "weight": 1
+  },
+  {
+    "name": "Ahmad Shadeed",
+    "site": "https://ishadeed.com/",
+    "feed": "https://ishadeed.com/feed.xml",
+    "weight": 1
+  },
+  {
+    "name": "Chrome for Developers",
+    "site": "https://developer.chrome.com/blog",
+    "feed": "https://developer.chrome.com/static/blog/feed.xml",
+    "weight": 1
+  },
+  {
+    "name": "web.dev",
+    "site": "https://web.dev/",
+    "feed": "https://web.dev/static/blog/feed.xml",
+    "weight": 1
+  },
+  {
+    "name": "Brad Frost",
+    "site": "https://bradfrost.com/blog",
+    "feed": "https://bradfrost.com/feed/feed.xml",
+    "weight": 1
+  },
+  {
+    "name": "EightShapes (Nathan Curtis)",
+    "site": "https://medium.com/eightshapes-llc",
+    "feed": "https://medium.com/feed/eightshapes-llc",
+    "weight": 1
+  },
+  {
+    "name": "Smashing Magazine",
+    "site": "https://www.smashingmagazine.com/",
+    "feed": "https://www.smashingmagazine.com/feed/",
+    "weight": 1
+  },
+  {
+    "name": "Julie Zhuo",
+    "site": "https://lg.substack.com/",
+    "feed": "https://lg.substack.com/feed",
+    "weight": 1
+  },
+  {
+    "name": "NN/g",
+    "site": "https://www.nngroup.com/articles",
+    "feed": "https://www.nngroup.com/feed/rss/",
+    "weight": 1
+  },
+  {
+    "name": "Linear changelog",
+    "site": "https://linear.app/changelog",
+    "feed": "https://linear.app/rss/changelog.xml",
+    "weight": 1
+  },
+  {
+    "name": "Vercel changelog",
+    "site": "https://vercel.com/changelog",
+    "feed": "https://vercel.com/atom",
+    "weight": 1
+  },
+  {
+    "name": "Supabase changelog",
+    "site": "https://supabase.com/changelog",
+    "feed": "https://supabase.com/changelog-rss.xml",
+    "weight": 1
+  },
+  {
+    "name": "Simon Willison",
+    "site": "https://simonwillison.net/",
+    "feed": "https://simonwillison.net/atom/everything/",
+    "weight": 1
+  },
+  {
+    "name": "Hacker News (front page)",
+    "site": "https://news.ycombinator.com/",
+    "feed": "https://news.ycombinator.com/rss",
+    "weight": 1
+  }
+]

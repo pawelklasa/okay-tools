@@ -1,675 +1,176 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { EmailCapture } from "../components/EmailCapture";
+import { BrandFooter, BrandHeader } from "../components/BrandChrome";
+import { checkDesignSystem, fetchDesignSystem, type DashboardReport } from "../lib/dashboardCheck";
+import { CATEGORIES } from "../lib/drift";
+import { publicationLabel, signalConfig, signalDate, signalHref, signalPath, useSignalDigests, utcToday } from "../lib/signal";
+
+const writingHref = "https://medium.com/design-bootcamp/color-is-finally-ok-82f368f3408c";
+const toolGroups = [
+  { name: "Audit", tools: [
+    { name: "Drift Score", to: "/drift", description: "Count distinct used values against published baselines.", tags: "CLI / Paste CSS / Live URL" },
+    { name: "token-costumes", to: "/tokens", description: "Find primitives dressed up as semantic tokens.", tags: "Costumes / Polysemy / Layers" },
+    { name: "default-audit", to: "/defaults", description: "See which AI-era defaults made it into your code.", tags: "shadcn / Tailwind / Inter / Lucide" },
+  ] },
+  { name: "Build", tools: [
+    { name: "Color is finally OK", to: "/color", description: "Balanced palettes, honest lightness. Finally.", tags: "OKLCH / Palette / Ramp / Contrast" },
+    { name: "honest-tokens", to: "/generate", description: "One brand colour. A complete three-layer token system.", tags: "Generate / Tailwind / DTCG" },
+    { name: "skills", to: "/skills", description: "Production design constraints for your AI coding tools.", tags: "Claude Code / Accessibility" },
+  ] },
+  { name: "Lab", tools: [
+    { name: "form-hostility", to: "/forms", description: "Four validation strategies. One timing playground.", tags: "Eager / Lazy / On-blur / Smart" },
+    { name: "preflight", to: "/preflight", description: "The software checklists you cannot skip.", tags: "Deploy / Review / Launch" },
+  ] },
+];
 
 export function BrandHome() {
+  const [input, setInput] = useState("");
+  const [report, setReport] = useState<DashboardReport | null>(null);
+  const [running, setRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const request = useRef<AbortController | null>(null);
+  useEffect(() => () => request.current?.abort(), []);
+
+  async function runCheck() {
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
+    setError(null);
+    setRunning(true);
+    let timedOut = false;
+    const timeout = window.setTimeout(() => { timedOut = true; controller.abort(); }, 20_000);
+    try {
+      const value = input.trim();
+      if (!value) throw new Error("Enter a URL or paste CSS to run the check.");
+      if (input.length > 2_000_000) throw new Error("This check accepts up to 2 MB of CSS and page source.");
+      let next: DashboardReport;
+      if (/[{};\n]/.test(input)) {
+        next = checkDesignSystem(value);
+      } else {
+        let target: URL;
+        try { target = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`); }
+        catch { throw new Error("Enter a valid HTTP or HTTPS URL, or paste CSS."); }
+        if (!/^https?:$/.test(target.protocol) || /\s/.test(value) || target.username || target.password || !/^(?:[a-z\d](?:[a-z\d-]*[a-z\d])?\.)+[a-z\d-]{2,}$/i.test(target.hostname)) {
+          throw new Error("Enter a valid HTTP or HTTPS URL, or paste CSS.");
+        }
+        next = await fetchDesignSystem(target.href, controller.signal);
+      }
+      if (controller.signal.aborted) return;
+      setReport(next);
+    } catch (cause) {
+      if (request.current !== controller) return;
+      if (timedOut) setError("The check timed out after 20 seconds. Try again or paste CSS instead.");
+      else if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Could not run the check. Try again.");
+    } finally {
+      window.clearTimeout(timeout);
+      if (request.current === controller && (!controller.signal.aborted || timedOut)) setRunning(false);
+    }
+  }
+
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Top bar */}
-      <header className="px-8 lg:px-16 pt-7 flex items-center gap-2.5">
-        <span
-          className="w-7 h-7 rounded-md"
-          style={{
-            background:
-              "conic-gradient(from 0deg, oklch(0.72 0.18 30), oklch(0.72 0.18 110), oklch(0.72 0.18 200), oklch(0.72 0.18 290), oklch(0.72 0.18 30))",
-          }}
-        />
-        <span className="font-semibold tracking-tight text-[15px]">
-          okay<span className="text-[var(--color-fg-dim)]">.tools</span>
-        </span>
-      </header>
-
-      {/* Hero */}
-      <section className="px-8 lg:px-16 pt-8 lg:pt-12 pb-7 max-w-5xl">
-        <p className="mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-fg-dim)] mb-6">
-          A small studio of tools that make the invisible obvious
-        </p>
-        <h1 className="text-[44px] md:text-[64px] lg:text-[76px] font-semibold tracking-[-0.035em] leading-[1.02] text-[var(--color-fg)]">
-          <span className="text-[var(--color-fg-dim)]">Pick your</span>{" "}
-          poison.
-        </h1>
-        <p className="mt-3 text-[16px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl">
-          Two apps. Both reveal something your design system pretends isn't broken.
-        </p>
-        <p className="mt-8 text-[15px] leading-relaxed text-[var(--color-fg-muted)] max-w-xl lg:max-w-3xl">
-          Most <span className="font-semibold text-[#FFDD00]">design defaults</span> get accepted
-          without evaluation. okay.tools makes the cost visible.
-        </p>
-      </section>
-
-      {/* Apps */}
-      <section className="px-8 lg:px-16 pb-10 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <DriftCard />
-        <ColorAppCard />
-        <FormsAppCard />
-        <TokenCostumesCard />
-        <HonestTokensCard />
-        <DefaultAuditCard />
-        <PreflightCard />
-        <SkillsCard />
-      </section>
-
-      {/* Writing */}
-      <section className="px-8 lg:px-16 pb-12">
-        <p className="mono text-[10px] uppercase tracking-[0.18em] text-[#FFDD00] mb-3">
-          Writing
-        </p>
-
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] divide-y divide-[var(--color-border)] overflow-hidden">
-          <a
-            href="https://medium.com/design-bootcamp/color-is-finally-ok-82f368f3408c"
-            target="_blank"
-            rel="noreferrer"
-            className="group block px-5 py-4 md:px-8 md:py-4 hover:bg-[var(--color-surface)] transition-colors"
-          >
-            <div className="flex flex-row items-center gap-4">
-              <div className="flex-1 min-w-0">
-                <p className="flex flex-wrap items-baseline gap-x-2 mb-1.5">
-                  <span className="text-[18px] font-semibold tracking-tight text-[var(--color-fg)]">
-                    Color is finally OK
-                  </span>
-                  <span className="mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
-                    <span aria-hidden>·</span> APR 22, 2026
-                  </span>
-                </p>
-                <p className="text-[13px] leading-relaxed text-[var(--color-fg-muted)]">
-                  Why HSL was lying about lightness, and what to do about it.
-                </p>
-              </div>
-              <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg self-center">
-                →
-              </span>
-            </div>
-          </a>
-
-          <a
-            href="#"
-            target="_blank"
-            rel="noreferrer"
-            className="group block px-5 py-4 md:px-8 md:py-4 hover:bg-[var(--color-surface)] transition-colors"
-          >
-            <div className="flex flex-row items-center gap-4">
-              <div className="flex-1 min-w-0">
-                <p className="flex flex-wrap items-baseline gap-x-2 mb-1.5">
-                  <span className="text-[18px] font-semibold tracking-tight text-[var(--color-fg)]">
-                    Form validation is hostile
-                  </span>
-                  <span className="mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
-                    <span aria-hidden>·</span> MAY 6, 2026
-                  </span>
-                </p>
-                <p className="text-[13px] leading-relaxed text-[var(--color-fg-muted)]">
-                  Four validation strategies. Six failure modes. One playground.
-                </p>
-              </div>
-              <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg self-center">
-                →
-              </span>
-            </div>
-          </a>
-        </div>
-      </section>
-
-      {/* Email capture — full-bleed band so it can't be missed */}
-      <section className="px-8 lg:px-16 pb-16">
-        <div
-          className="rounded-[var(--radius-lg)] border border-[#FFDD00]/40 p-8 lg:p-12 grid md:grid-cols-[1fr_auto] gap-8 items-center"
-          style={{
-            background:
-              "linear-gradient(180deg, oklch(0.22 0.10 95 / 0.18), oklch(0.18 0.05 95 / 0.10))",
-          }}
-        >
-          <div className="max-w-xl">
-            <p className="mono text-[10px] uppercase tracking-[0.18em] text-[#FFDD00] mb-3">
-              Get the next one
-            </p>
-            <h2 className="text-[28px] md:text-[34px] font-semibold tracking-[-0.02em] leading-[1.1] text-[var(--color-fg)] mb-3">
-              I'll email you when the next tool ships.
-            </h2>
-            <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)]">
-              One email per tool. Roughly every couple of months. No newsletter, no marketing.
-            </p>
+    <div className="dashboard min-h-screen flex flex-col">
+      <BrandHeader dashboard />
+      <div id="dashboard-content" className="dashboard-content">
+        <section id="check" className="dashboard-hero" aria-labelledby="dashboard-heading">
+          <div className="dashboard-intro">
+            <p className="dashboard-eyebrow mono">Quality control for design systems,<br />now that AI writes the UI</p>
+            <h1 id="dashboard-heading"><span>Is your design system</span><br />okay?</h1>
+            <p className="dashboard-description">Most <strong>design defaults</strong> get accepted without evaluation. Paste a URL or your CSS and see what yours are costing you.</p>
+            <form className="dashboard-check" onSubmit={(event) => { event.preventDefault(); void runCheck(); }}>
+              <label htmlFor="dashboard-input" className="sr-only">URL or CSS to check</label>
+              <textarea id="dashboard-input" rows={input.includes("\n") ? Math.min(6, input.split("\n").length) : 1} value={input} spellCheck={false} placeholder="your-site.com or paste CSS" aria-describedby={error ? "dashboard-error" : undefined} aria-invalid={Boolean(error)} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); if (!running) void runCheck(); }
+              }} />
+              <button type="submit" disabled={running}>{running ? "Checking..." : "Run the check"} <span aria-hidden>→</span></button>
+            </form>
+            {error && <p id="dashboard-error" className="dashboard-error" role="alert">{error}</p>}
+            <p className="dashboard-check-note mono">// Runs Drift Score, default-audit and token-costumes in one pass. Free, no sign-up.</p>
+            <span className="sr-only" role="status">{running ? "Checking your design system." : report ? `Check complete. ${report.findings} checks flagged.` : "Ready to check."}</span>
           </div>
-          <div className="md:min-w-[360px]">
-            <EmailCapture source="landing" prompt="" hideHeading />
-          </div>
+          <Report report={report} />
+        </section>
+        <div className="dashboard-signal-band">
+          <DashboardSignal />
+          <aside className="dashboard-studio" aria-label="From the studio">
+            <p className="dashboard-eyebrow mono">From the studio</p>
+            <div className="dashboard-studio-item"><p className="dashboard-label mono">Latest writing</p><a href={writingHref} target="_blank" rel="noreferrer">Color is finally OK <span aria-hidden>↗</span></a><p>Why HSL was lying about lightness.</p></div>
+            <div className="dashboard-email"><p className="dashboard-label mono">Get the next one</p><h2>One email when a tool ships.</h2><EmailCapture source="landing" prompt="" hideHeading /></div>
+          </aside>
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="mt-auto px-8 lg:px-16 py-8 flex flex-wrap gap-x-6 gap-y-3 items-center justify-between text-xs text-[var(--color-fg-dim)] border-t border-[var(--color-border)]">
-        <p>
-          Built by{" "}
-          <a
-            href="https://pavka.design/"
-            className="text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
-          >
-            Pawel Klasa
-          </a>
-          .
-        </p>
-        <div className="flex gap-5">
-          <a
-            href="https://github.com/pawelklasa/okay-tools"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-[var(--color-fg)]"
-          >
-            GitHub
-          </a>
-          <a
-            href="https://buy.stripe.com/5kQ6oJ6Qebt63GN9G71wY00"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-[var(--color-fg)]"
-          >
-            Tip
-          </a>
-        </div>
-        <p className="mono">v0.2 · MIT</p>
-      </footer>
+        <section id="tools" className="dashboard-tools" aria-labelledby="tools-heading">
+          <div className="dashboard-section-heading"><h2 id="tools-heading"><span>The</span> tools.</h2><p className="mono">8 tools · MIT · no sign-up</p></div>
+          {toolGroups.map((group, index) => <div className={`dashboard-tool-group dashboard-tool-group-${group.name.toLowerCase()}`} key={group.name}>
+            <h3 className="dashboard-eyebrow mono">{String(index + 1).padStart(2, "0")} · {group.name}<span className="dashboard-group-description">{["Find out what's broken.", "Fix it properly.", "Experiments and playgrounds."][index]}</span></h3>
+            <div className="dashboard-tool-grid">{group.tools.map((tool) => <Link className="dashboard-tool" key={tool.to} to={tool.to}><h4>{tool.name}<span aria-hidden>→</span></h4><p>{tool.description}</p><div className="dashboard-tool-tags mono">{tool.tags.split(" / ").map(tag => <span key={tag}>{tag}</span>)}</div></Link>)}</div>
+          </div>)}
+        </section>
+        <section id="writing" className="dashboard-writing" aria-labelledby="writing-heading">
+          <h2 id="writing-heading" className="dashboard-eyebrow mono">Writing & experiments</h2>
+          <a href={writingHref} target="_blank" rel="noreferrer"><div><h3>Color is finally OK</h3><p>Why HSL was lying about lightness, and what to do about it.</p></div><span className="mono">APR 22, 2026 <span aria-hidden>↗</span></span></a>
+          <Link to="/forms"><div><h3>form-hostility</h3><p>Four validation strategies. Six failure modes. One playground.</p></div><span className="mono">PLAYGROUND <span aria-hidden>→</span></span></Link>
+        </section>
+      </div>
+      <BrandFooter dashboard />
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-
-function ColorAppCard() {
-  const hues = [30, 60, 130, 200, 290];
-  return (
-    <Link
-      to="/color"
-      className="group rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden hover:border-[var(--color-border-strong)] transition flex flex-col"
-    >
-      {/* Preview: HSL row vs OKLCH row, classic reveal */}
-      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-3">
-        <div>
-          <p className="mono text-[9.5px] uppercase tracking-wider text-[var(--color-fg-dim)] mb-1.5">
-            HSL — same lightness, very much not
-          </p>
-          <div className="grid h-8 rounded overflow-hidden" style={{ gridTemplateColumns: `repeat(${hues.length}, 1fr)` }}>
-            {hues.map((h) => (
-              <div key={h} style={{ background: `hsl(${h} 100% 50%)` }} />
-            ))}
-          </div>
-        </div>
-        <div>
-          <p className="mono text-[9.5px] uppercase tracking-wider text-[var(--color-fg-dim)] mb-1.5">
-            OKLCH — actually balanced
-          </p>
-          <div className="grid h-8 rounded overflow-hidden" style={{ gridTemplateColumns: `repeat(${hues.length}, 1fr)` }}>
-            {hues.map((h) => (
-              <div key={h} style={{ background: `oklch(0.68 0.17 ${h})` }} />
-            ))}
-          </div>
-        </div>
+function Report({ report }: { report: DashboardReport | null }) {
+  if (!report) return <section className="dashboard-report dashboard-report-empty" aria-label="Design system report">
+    <div className="dashboard-report-top mono">Okay report</div>
+    <div className="dashboard-verdict"><h2>Your results go here.</h2></div>
+    <div className="dashboard-metrics">{["Spacing", "Defaults", "Costumes"].map(label => <div key={label}><span className="dashboard-label mono">{label}</span><strong aria-label="Not checked">—</strong></div>)}</div>
+    <p className="dashboard-report-caveat mono">No check run yet.</p>
+  </section>;
+  const compact = (value: string) => value.length > 160 ? `${value.slice(0, 157)}...` : value;
+  const costume = report.tokens.costumes[0];
+  const defaultGroup = report.defaults.groups[0];
+  return <section className="dashboard-report" aria-label="Design system report">
+    <div className="dashboard-report-top mono"><span>Okay report</span><span className="dashboard-report-source">[{compact(report.source)}]</span></div>
+    <div className="dashboard-verdict"><h2>{report.findings ? "Not okay." : "Looks okay."}</h2><p className="mono">{report.findings} {report.findings === 1 ? "check" : "checks"} flagged</p></div>
+    <div className="dashboard-metrics">
+      <Link to="/drift"><span className="dashboard-label mono">Spacing</span><strong>{report.spacing.distinctCount}</strong><span className={`mono ${report.spacing.delta ? "dashboard-flag" : ""}`}>{report.spacing.delta ? `+${report.spacing.delta} over baseline` : "Within baseline"}</span></Link>
+      <Link to="/defaults"><span className="dashboard-label mono">Defaults</span><strong>{report.defaults.score}<small>/100</small></strong><span className="mono">Density</span></Link>
+      <Link to="/tokens"><span className="dashboard-label mono">Costumes</span><strong>{report.tokens.costumeCount}</strong><span className="mono">Literal tokens</span></Link>
+    </div>
+    <div className="dashboard-evidence mono">
+      {costume && <div><code><span>{compact(costume.token.cssName)}</span>: {compact(costume.token.value)};</code><p>// {costume.reason}</p></div>}
+      {defaultGroup && <div>{defaultGroup.evidence.slice(0, 2).map((evidence, index) => <code key={`${evidence.line}-${index}`}>{compact(evidence.match ?? defaultGroup.items[0] ?? defaultGroup.name)}</code>)}<p>// {defaultGroup.name} ({defaultGroup.source})</p></div>}
+      {!costume && !defaultGroup && <p>// {report.drift.totalObservations} CSS observations checked.</p>}
+    </div>
+    <details className="dashboard-findings"><summary>View findings</summary>
+      <div className="dashboard-finding-list">
+        <h3><Link to="/drift">Drift Score →</Link></h3>
+        {report.drift.categories.filter((category) => category.delta > 0).map((category) => <p key={category.category}>{CATEGORIES[category.category]}: {category.distinctCount} values, +{category.delta} over baseline ({category.baseline.max}).</p>)}
+        {!report.drift.overBudget && <p>No categories over baseline.</p>}
+        <h3><Link to="/defaults">default-audit →</Link></h3>
+        {report.defaults.groups.map((group) => <p key={group.key}>{group.name} · {group.source} · {group.evidence.length} matches</p>)}
+        {!report.defaults.groups.length && <p>No default patterns detected.</p>}
+        <h3><Link to="/tokens">token-costumes →</Link></h3>
+        {report.tokens.costumes.map((finding) => <p key={finding.token.cssName}><code>{finding.token.cssName}: {finding.token.value}</code> · {finding.reason}</p>)}
+        {!report.tokens.costumeCount && <p>No costume tokens detected.</p>}
       </div>
-      <div className="p-6">
-        <div className="flex items-baseline justify-between mb-2">
-          <h2 className="text-[22px] font-semibold tracking-tight text-[var(--color-fg)]">
-            Color is finally OK
-          </h2>
-          <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg">
-            →
-          </span>
-        </div>
-        <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-4">
-          Migrate HSL to OKLCH, generate balanced palettes, and see exactly which colours your old
-          system was lying about.
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {["HSL → OKLCH", "Palette", "Ramp", "Contrast", "Gradient"].map((t) => (
-            <span
-              key={t}
-              className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-    </Link>
-  );
+    </details>
+    <p className="dashboard-report-caveat mono">Pattern matches, not a design verdict.</p>
+    <Link className="dashboard-report-fix" to="/generate">Fix it with honest-tokens <span aria-hidden>→</span></Link>
+  </section>;
 }
 
-function FormsAppCard() {
-  return (
-    <Link
-      to="/forms"
-      className="group relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden hover:border-[#FFDD00]/60 transition flex flex-col shadow-[0_0_0_0_rgba(255,221,0,0)] hover:shadow-[0_0_40px_-12px_rgba(255,221,0,0.35)]"
-    >
-      {/* Preview: tiny mock form with eager error vs calm field */}
-      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-3">
-        <div className="flex flex-col gap-1.5">
-          <p className="mono text-[9.5px] uppercase tracking-wider text-[var(--color-fg-dim)]">
-            Eager — punishes typing
-          </p>
-          <div className="rounded border border-[oklch(0.65_0.18_75)] bg-[var(--color-surface)] px-3 py-2 flex items-center justify-between shadow-[0_0_0_3px_oklch(0.65_0.18_75/0.18)]">
-            <span className="mono text-[11px] text-[var(--color-fg)]">paw</span>
-            <span className="mono text-[10px] font-semibold text-[#FFDD00]">
-              ⚠ not a valid email
-            </span>
-          </div>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <p className="mono text-[9.5px] uppercase tracking-wider text-[var(--color-fg-dim)]">
-            Smart — waits its turn
-          </p>
-          <div className="rounded border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 flex items-center justify-between">
-            <span className="mono text-[11px] text-[var(--color-fg)]">paw</span>
-            <span className="mono text-[10px] text-[oklch(0.58_0_0)]">· still typing</span>
-          </div>
-        </div>
-      </div>
-      <div className="p-6">
-        <div className="flex items-baseline justify-between mb-2">
-          <h2 className="text-[22px] font-semibold tracking-tight text-[var(--color-fg)]">
-            form-hostility
-          </h2>
-          <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg">
-            →
-          </span>
-        </div>
-        <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-4">
-          A validation timing playground. Toggle strategies and watch the same form go from helpful
-          to outright hostile.
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {["Eager", "Lazy", "On-blur", "Smart"].map((t) => (
-            <span
-              key={t}
-              className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-// Active card linking to /tokens. Same demo (PRIMITIVE IN COSTUME /
-// POLYSEMIC / HONEST TOKEN) — now full opacity, hover affordance, and
-// arrow consistent with the other two cards.
-function TokenCostumesCard() {
-  return (
-    <Link
-      to="/tokens"
-      className="group relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col hover:border-[#FFDD00]/60 transition shadow-[0_0_0_0_rgba(255,221,0,0)] hover:shadow-[0_0_40px_-12px_rgba(255,221,0,0.35)]"
-    >
-      {/* Preview: code listing with annotations — reads as a CSS snippet, not form fields */}
-      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-3">
-        <div className="flex flex-col gap-1">
-          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
-            Primitive in costume
-          </p>
-          <code className="mono text-[11px] leading-snug text-[var(--color-fg)] bg-[var(--color-surface-2)] px-2 py-1 rounded-sm break-all">
-            --color-primary: #3b82f6
-          </code>
-          <p className="mono text-[10px] leading-snug text-[var(--color-fg-dim)]">
-            // used as bg, link, icon, border, text, ring
-          </p>
-        </div>
-        <div className="flex flex-col gap-1">
-          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
-            Polysemic
-          </p>
-          <code className="mono text-[11px] leading-snug text-[var(--color-fg)] bg-[var(--color-surface-2)] px-2 py-1 rounded-sm break-all">
-            --color-primary-500
-          </code>
-          <p className="mono text-[10px] leading-snug text-[var(--color-fg-dim)]">
-            // also used as --button-bg, --link, --ring
-          </p>
-        </div>
-        <div className="flex flex-col gap-1">
-          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
-            Honest token
-          </p>
-          <code className="mono text-[11px] leading-snug text-[var(--color-fg)] bg-[var(--color-surface-2)] px-2 py-1 rounded-sm break-all">
-            --color-action: var(--color-blue-500)
-          </code>
-          <p className="mono text-[10px] leading-snug text-[var(--color-fg-dim)]">
-            // aliases primitive, single purpose
-          </p>
-        </div>
-      </div>
-      <div className="p-6">
-        <div className="flex items-baseline justify-between mb-2 gap-2">
-          <h2 className="text-[22px] font-semibold tracking-tight text-[var(--color-fg)]">
-            token-costumes
-          </h2>
-          <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg">
-            →
-          </span>
-        </div>
-        <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-4">
-          Audit your token system. See which "semantic" tokens are actually primitives in costume —
-          and what an honest three-layer system looks like.
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {["Costumes", "Polysemy", "Layers", "Naming"].map((t) => (
-            <span
-              key={t}
-              className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-// honest-tokens generator landing card. Demo: anchor swatch, a primitive
-// ramp strip beneath, and a one-line audit-pass caption.
-function HonestTokensCard() {
-  const anchor = "oklch(0.55 0.21 285)";
-  const ramp = [
-    "oklch(0.95 0.04 285)",
-    "oklch(0.78 0.12 285)",
-    "oklch(0.55 0.21 285)",
-    "oklch(0.38 0.18 285)",
-    "oklch(0.22 0.10 285)",
-  ];
-  return (
-    <Link
-      to="/generate"
-      className="group relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col hover:border-[#FFDD00]/60 transition shadow-[0_0_0_0_rgba(255,221,0,0)] hover:shadow-[0_0_40px_-12px_rgba(255,221,0,0.35)]"
-    >
-      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-4">
-        <div className="flex flex-col gap-2">
-          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
-            Anchor
-          </p>
-          <div className="flex items-center gap-3">
-            <span
-              aria-hidden
-              className="w-12 h-12 rounded-sm border border-[var(--color-border)]"
-              style={{ background: anchor }}
-            />
-            <code className="mono text-[11px] leading-snug text-[var(--color-fg)] bg-[var(--color-surface-2)] px-2 py-1 rounded-sm break-all">
-              {anchor}
-            </code>
-          </div>
-        </div>
-        <div className="flex flex-col gap-2">
-          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
-            Primitive ramp
-          </p>
-          <div className="flex gap-1.5">
-            {ramp.map((c, i) => (
-              <span
-                key={i}
-                aria-hidden
-                className="flex-1 h-6 rounded-sm border border-[var(--color-border)]"
-                style={{ background: c }}
-              />
-            ))}
-          </div>
-        </div>
-        <p className="mono text-[10px] leading-snug text-[oklch(0.78_0.16_155)]">
-          ✓ 0 costumes detected
-        </p>
-      </div>
-      <div className="p-6">
-        <div className="flex items-baseline justify-between mb-2 gap-2">
-          <h2 className="text-[22px] font-semibold tracking-tight text-[var(--color-fg)]">
-            honest-tokens
-          </h2>
-          <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg">
-            →
-          </span>
-        </div>
-        <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-4">
-          Paste a brand colour. Get a complete three-layer token system, plus a brand contract for
-          your AI coding tools.
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {["Generate", "OKLCH", "Tailwind", "CLAUDE.md", "DTCG"].map((t) => (
-            <span
-              key={t}
-              className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-// default-audit landing card. Demo: a code snippet with detected defaults
-// highlighted, plus a tiny density meter.
-function PreflightCard() {
-  const checklists = [
-    { name: "Pre-deploy", count: 9 },
-    { name: "Pre-review", count: 8 },
-    { name: "Pre-incident response", count: 8 },
-    { name: "Pre-launch", count: 9 },
-  ];
-  return (
-    <Link
-      to="/preflight"
-      className="group relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col hover:border-[var(--color-border-strong)] transition"
-    >
-      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-1.5">
-        {checklists.map((cl) => (
-          <div key={cl.name} className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-sm border border-[var(--color-border-strong)] flex items-center justify-center flex-shrink-0">
-              <svg width="8" height="7" viewBox="0 0 8 7" fill="none">
-                <path d="M1 3.5L3 5.5L7 1" stroke="var(--color-ok)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <span className="mono text-[11px] text-[var(--color-fg-muted)] flex-1">{cl.name}</span>
-            <span className="mono text-[10px] text-[var(--color-fg-dim)]">{cl.count}</span>
-          </div>
-        ))}
-      </div>
-      <div className="p-6">
-        <div className="flex items-baseline justify-between mb-2 gap-2">
-          <h2 className="text-[22px] font-semibold tracking-tight text-[var(--color-fg)]">
-            preflight
-          </h2>
-          <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg">
-            →
-          </span>
-        </div>
-        <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)]">
-          Aviation-style pre-flight checklists for software work. Walk through
-          the items you cannot skip.
-        </p>
-      </div>
-    </Link>
-  );
-}
-
-function DefaultAuditCard() {
-  return (
-    <Link
-      to="/defaults"
-      className="group relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col hover:border-[#FFDD00]/60 transition shadow-[0_0_0_0_rgba(255,221,0,0)] hover:shadow-[0_0_40px_-12px_rgba(255,221,0,0.35)]"
-    >
-      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-3">
-        <div className="flex flex-col gap-1">
-          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
-            Detected
-          </p>
-          <code className="mono text-[11px] leading-snug text-[var(--color-fg)] bg-[var(--color-surface-2)] px-2 py-1 rounded-sm break-all">
-            <span className="text-[#FFDD00]">--primary</span>: 222.2 47.4% 11.2%;
-          </code>
-          <p className="mono text-[10px] leading-snug text-[var(--color-fg-dim)]">
-            // shadcn/ui token name
-          </p>
-        </div>
-        <div className="flex flex-col gap-1">
-          <code className="mono text-[11px] leading-snug text-[var(--color-fg)] bg-[var(--color-surface-2)] px-2 py-1 rounded-sm break-all">
-            from <span className="text-[#FFDD00]">"lucide-react"</span>
-          </code>
-          <p className="mono text-[10px] leading-snug text-[var(--color-fg-dim)]">
-            // AI-era icon default
-          </p>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
-            Density 78 / 100
-          </p>
-          <div className="h-1.5 rounded-full bg-[var(--color-surface-2)] overflow-hidden">
-            <div className="h-full w-[78%] rounded-full bg-[#FFDD00]" />
-          </div>
-        </div>
-      </div>
-      <div className="p-6">
-        <div className="flex items-baseline justify-between mb-2 gap-2">
-          <h2 className="text-[22px] font-semibold tracking-tight text-[var(--color-fg)]">
-            default-audit
-          </h2>
-          <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg">
-            →
-          </span>
-        </div>
-        <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-4">
-          Paste CSS, JSX, or class names. See which AI-era defaults — shadcn,
-          Tailwind, Inter, Lucide — are in your code.
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {["shadcn", "Tailwind", "Lucide", "Inter", "Radix"].map((t) => (
-            <span
-              key={t}
-              className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function DriftCard() {
-  // Mini preview: 8 near-identical greys side by side — the headline visual.
-  const greys = ["#2a2a2e", "#2b2b2f", "#2c2c30", "#2e2e32", "#303034", "#323236", "#343438", "#36363a"];
-  return (
-    <Link
-      to="/drift"
-      className="group relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col hover:border-[var(--color-accent-500)]/60 transition shadow-[0_0_0_0_rgba(94,195,255,0)] hover:shadow-[0_0_40px_-12px_rgba(94,195,255,0.35)]"
-    >
-      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-3">
-        <div>
-          <p className="mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)] mb-1.5">
-            8 distinct greys
-          </p>
-          <div className="grid h-9 rounded overflow-hidden border border-[var(--color-border)]" style={{ gridTemplateColumns: `repeat(${greys.length}, 1fr)` }}>
-            {greys.map((g) => <div key={g} style={{ background: g }} />)}
-          </div>
-          <p className="mono text-[10px] text-[var(--color-fg-dim)] mt-1.5">ΔE &lt; 0.02 — you cannot tell these apart</p>
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          <div className="rounded bg-[var(--color-surface-2)] p-2">
-            <p className="mono text-[9px] uppercase text-[var(--color-fg-dim)]">spacing</p>
-            <p className="text-[18px] font-semibold">23</p>
-            <p className="mono text-[9px] text-[var(--color-err)]">+7</p>
-          </div>
-          <div className="rounded bg-[var(--color-surface-2)] p-2">
-            <p className="mono text-[9px] uppercase text-[var(--color-fg-dim)]">fonts</p>
-            <p className="text-[18px] font-semibold">5</p>
-            <p className="mono text-[9px] text-[var(--color-err)]">+2</p>
-          </div>
-          <div className="rounded bg-[var(--color-surface-2)] p-2">
-            <p className="mono text-[9px] uppercase text-[var(--color-fg-dim)]">shadows</p>
-            <p className="text-[18px] font-semibold">9</p>
-            <p className="mono text-[9px] text-[var(--color-err)]">+3</p>
-          </div>
-        </div>
-      </div>
-      <div className="p-6">
-        <div className="flex items-baseline justify-between mb-2 gap-2">
-          <h2 className="text-[22px] font-semibold tracking-tight text-[var(--color-fg)]">
-            Drift Score
-          </h2>
-          <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg">
-            →
-          </span>
-        </div>
-        <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-4">
-          Count the distinct used values in your design system. CLI, paste, or live URL —
-          one transparent number against published baselines.
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {["npx okay-drift", "Paste CSS", "Live URL", "OKLCH ΔE"].map((t) => (
-            <span
-              key={t}
-              className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function SkillsCard() {
-  return (
-    <Link
-      to="/skills"
-      className="group relative rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden flex flex-col hover:border-[var(--color-border-strong)] transition"
-    >
-      <div className="aspect-[16/10] bg-[var(--color-bg)] border-b border-[var(--color-border)] p-5 flex flex-col justify-center gap-2.5">
-        <div className="flex items-center gap-2">
-          <span className="mono text-[9.5px] uppercase tracking-[0.16em] text-[var(--color-fg-dim)]">
-            SKILL.md
-          </span>
-          <span className="mono text-[9px] px-1.5 py-0.5 rounded bg-[var(--color-surface-2)] text-[var(--color-accent-400)]">
-            MIT
-          </span>
-        </div>
-        <code className="mono text-[11px] leading-snug text-[var(--color-fg)] bg-[var(--color-surface-2)] px-2 py-1.5 rounded-sm break-all">
-          <span className="text-[var(--color-fg-dim)]"># </span>
-          production-design
-        </code>
-        <div className="flex flex-col gap-1 mt-1">
-          <div className="flex items-center gap-2">
-            <span className="w-1 h-1 rounded-full bg-[var(--color-accent-400)]" />
-            <span className="mono text-[10px] text-[var(--color-fg-muted)]">constraints first</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-1 h-1 rounded-full bg-[var(--color-accent-400)]" />
-            <span className="mono text-[10px] text-[var(--color-fg-muted)]">WCAG 2.2 AA floor</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-1 h-1 rounded-full bg-[var(--color-accent-400)]" />
-            <span className="mono text-[10px] text-[var(--color-fg-muted)]">named trade-offs</span>
-          </div>
-        </div>
-      </div>
-      <div className="p-6">
-        <div className="flex items-baseline justify-between mb-2 gap-2">
-          <h2 className="text-[22px] font-semibold tracking-tight text-[var(--color-fg)]">
-            skills
-          </h2>
-          <span className="text-[var(--color-fg-dim)] group-hover:text-[var(--color-fg)] transition text-lg">
-            →
-          </span>
-        </div>
-        <p className="text-[14px] leading-relaxed text-[var(--color-fg-muted)] mb-4">
-          Claude Code skills for production software. An alternative to Anthropic's
-          frontend-design skill, built on constraints and accessibility.
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {["Claude Code", "Accessibility", "Production"].map((t) => (
-            <span
-              key={t}
-              className="mono text-[10px] px-2 py-1 rounded bg-[var(--color-surface-2)] text-[var(--color-fg-muted)]"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-    </Link>
-  );
+function DashboardSignal() {
+  const state = useSignalDigests();
+  const digest = state.digests[0];
+  const sparse = Boolean(digest && digest.kept > 0 && digest.kept <= 3);
+  return <section className="dashboard-signal" data-sparse={sparse} aria-labelledby="dashboard-signal-heading">
+    <div className="dashboard-signal-top"><a className="dashboard-eyebrow mono" href={signalHref()}>{signalConfig.name}</a><span className="mono">{digest ? signalDate(digest.date).toUpperCase() : "DAILY DIGEST"}</span></div>
+    <div className="dashboard-signal-heading"><h2 id="dashboard-signal-heading"><span>{digest ? digest.date === utcToday() ? "Today," : "The latest," : "Signal,"}</span> worth reading.</h2>{digest && <p className="mono">{digest.kept} selected{digest.sources?.length ? ` / ${digest.sources.length} sources` : ""}</p>}</div>
+    {state.status === "loading" && <p className="dashboard-feed-state" role="status">Loading the latest digest...</p>}
+    {state.status === "error" && <div className="dashboard-feed-state"><p role="alert">Could not load the digest.</p><button type="button" onClick={state.retry}>Try again <span aria-hidden>↻</span></button></div>}
+    {state.status === "ready" && !digest && <p className="dashboard-feed-state">Awaiting the first digest.</p>}
+    {digest && <ol className="dashboard-signal-rows">{digest.items.slice(0, 5).map((item) => {
+      const published = publicationLabel(item.publishedAt, digest.date);
+      return <li key={item.url}><span className="dashboard-rank mono">{String(item.rank).padStart(2, "0")}</span><a href={item.url} target="_blank" rel="noopener noreferrer"><h3>{item.title} <span aria-hidden>↗</span></h3><p className="mono"><span>{item.source}</span> · <time dateTime={published.timestamp ? item.publishedAt : undefined} title={published.timestamp}>{published.label}</time></p>{sparse && <><p className="dashboard-signal-summary">{item.summary}</p><div className="dashboard-tool-tags mono">{item.tags.map(tag => <span key={tag}>{tag}</span>)}</div></>}<p className="dashboard-signal-why mono" title={item.why}>// {item.why}</p></a></li>;
+    })}</ol>}
+    <div className="dashboard-signal-bottom mono"><a href={signalHref()}>{digest ? digest.kept > 5 ? `See all ${digest.kept}` : "Read the digest" : "Open Signal"} <span aria-hidden>→</span></a><div><a href={signalHref(`${signalPath}/archive`)}>Archive</a><a href={signalHref(`${signalPath}/rss.xml`)}>RSS</a></div></div>
+  </section>;
 }
